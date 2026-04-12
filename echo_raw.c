@@ -8,26 +8,7 @@
 #include <string.h>
 
 // Função que explicamos anteriormente
-int cria_raw_socket(char* nome_interface_rede) {
-    int soquete = socket(AF_PACKET, SOCK_RAW, htons(ETH_P_ALL));
-    if (soquete == -1) {
-        perror("Erro ao criar socket");
-        exit(-1);
-    }
-
-    int ifindex = if_nametoindex(nome_interface_rede);
-    struct sockaddr_ll endereco = {0};
-    endereco.sll_family = AF_PACKET;
-    endereco.sll_protocol = htons(ETH_P_ALL);
-    endereco.sll_ifindex = ifindex;
-
-    if (bind(soquete, (struct sockaddr*) &endereco, sizeof(endereco)) == -1) {
-        perror("Erro ao fazer bind");
-        exit(-1);
-    }
-
-    return soquete;
-}
+extern int cria_raw_socket(char* nome_interface_rede);
 
 int main(int argc, char *argv[]) {
     if (argc < 2) {
@@ -36,12 +17,15 @@ int main(int argc, char *argv[]) {
         return 1;
     }
 
+    //Cria um socket a partir do nome da interface
     int sock = cria_raw_socket(argv[1]);
     unsigned char buffer[1600]; // Buffer para capturar o quadro Ethernet
     
     printf("Ouvindo a interface %s... Pressione Ctrl+C para parar.\n", argv[1]);
 
     while (1) {
+        // recv coloca os dados lidos do socket no buffer e retorna o tamanho lido,
+        // em caso de erro retorna -1
         // recv retorna o tamanho do pacote recebido
         ssize_t tam = recv(sock, buffer, sizeof(buffer), 0);
         

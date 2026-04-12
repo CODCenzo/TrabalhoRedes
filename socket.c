@@ -16,7 +16,7 @@ int cria_raw_socket(char* nome_interface_rede) {
         exit(-1);
     }
  
-    // Transforma o nome da interface de rede "wlo1" em índice
+    // Transforma o nome da interface de rede "wlp2s0" em índice
     int ifindex = if_nametoindex(nome_interface_rede);
  
     // Conecta o socket a interface física
