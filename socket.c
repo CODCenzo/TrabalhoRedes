@@ -1,11 +1,7 @@
-#include <arpa/inet.h>
-#include <net/ethernet.h>
-#include <linux/if_packet.h>
-#include <net/if.h>
-#include <stdlib.h>
-#include <stdio.h>
+#include "socket.h" 
  
 int cria_raw_socket(char* nome_interface_rede) {
+
     // Cria arquivo para o socket sem qualquer protocolo
     // AF_PACKET = Acesso direto ao nível de pacote da interface de rede
     // SOCK_RAW = O kernel para de processar cabeçalhos
