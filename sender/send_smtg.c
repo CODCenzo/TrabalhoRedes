@@ -1,14 +1,47 @@
-/*arquivo que tenta enviar um buffer de 1's para o client*/
-
 #include <stdlib.h> 
 #include <string.h> 
-
+#include <stdint.h>
 #include "../receiver/socket.h"
+
+// Representa os 14 bytes de header ethernet (AF_PACKET)
+struct eth_header {
+	//Força o compilador a usar inteiros de 8 ou 16 bits
+	uint8_t  dest_mac[6];
+	uint8_t  src_mac[6];
+	uint16_t ethertype;
+} __attribute__((packed));
+//__attribute__((packed)) força o compilador a usar o tamanho definido e evitar padding
 
 int main(int argc, char *argv[]) {
 
-  int sock, i ;
-	unsigned char buffer[1600] ; // Buffer para enviar
+	// 14 bytes eth header e 1500 bytes para mensagem
+	unsigned char buffer[1514];
+
+	//------------------------------------------
+	//HEADER ETHERNET
+
+	// Aloca 14 bytes para o header da ethernet.
+	// 6 bytes MAC addres / 6 bytes MAC destiny / 2 Bytes ethernet type / 1500 mensagem
+	struct eth_header *eth_header_msg1 = (struct eth_header*) buffer;
+
+	// Utiliza a função host to network para atribuir valor ao campo
+	// 0x88B5 é um tipo experimental usado para testes
+	eth_header_msg1->ethertype = htons(0x88B5);
+
+	//Atribui os valores FFFFFFFFFFFFFFF ; significa BROADCAST(envia para todo mundo conectado)
+	memset(eth_header_msg1->dest_mac, 0xFF, 6);
+
+	//Estou usando o MAC do meu endereço HARDWIRED
+	//MAC: 	00:e0:4c:88:00:fc ; nome da interface enx00e04c8800fc
+	eth_header_msg1->src_mac[0] = 0x00;
+	eth_header_msg1->src_mac[1] = 0xe0;
+	eth_header_msg1->src_mac[2] = 0x4c;
+	eth_header_msg1->src_mac[3] = 0x88;
+	eth_header_msg1->src_mac[4]	= 0x00;
+	eth_header_msg1->src_mac[5] = 0xfc;
+
+	//------------------------------------------
+	//SOCKET
 
 	if (argc < 2) {
 		printf("Uso: sudo %s <nome_da_interface>\n", argv[0]);
@@ -16,15 +49,23 @@ int main(int argc, char *argv[]) {
 		return 1;
 	}
 
-	//Cria um socket a partir do nome da interface
-	sock = cria_raw_socket(argv[1]);
+	// Cria um socket a partir do nome da interface
+	int sock = cria_raw_socket(argv[1]);
 
-  //enche o buffer
-	memset(buffer, 1, sizeof(buffer));
-    
-	send(sock, buffer, sizeof(unsigned char) *1600, 0) ;
+	//------------------------------------------
+	//MESSAGE (nosso kermit)
 
-  close(sock) ;
+  // Enche o campo mensagem com o valor 1 (0x01)
+	memset(buffer + 14, 1, sizeof(buffer) - 14);
+	
+	//------------------------------------------
+	//SEND BUFFER
+	send(sock, buffer, sizeof(unsigned char) *1514, 0);
+
+	//------------------------------------------
+
+  close(sock);
+
   return 0;
 }
 

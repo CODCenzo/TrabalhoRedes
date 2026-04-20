@@ -1,3 +1,3 @@
 all:
-	gcc -Wall send_smtg.c ../socket.c -o send 
+	gcc -Wall send_smtg.c ../receiver/socket.c -o send 
 
