@@ -25,6 +25,7 @@ int main(int argc, char *argv[]) {
     
 	send(sock, buffer, sizeof(unsigned char) *1600, 0) ;
 
+  close(sock) ;
   return 0;
 }
 
