@@ -45,7 +45,15 @@ int build_kermit(unsigned char buffer[TAM_BUFFER], uint8_t tam, uint8_t seq,
 	eth_header_msg1->src_mac[4]	= 0xdc;
 	eth_header_msg1->src_mac[5] = 0xf6;
 
-  
+ 	//Estou usando o MAC do meu endereço HARDWIRED
+	//MAC: 	00:e0:4c:88:00:fc ; nome da interface enx00e04c8800fc
+	/*eth_header_msg1->src_mac[0] = 0x00;
+	eth_header_msg1->src_mac[1] = 0xe0;
+	eth_header_msg1->src_mac[2] = 0x4c;
+	eth_header_msg1->src_mac[3] = 0x88;
+	eth_header_msg1->src_mac[4]	= 0x00;
+	eth_header_msg1->src_mac[5] = 0xfc;*/
+
   // Enche o campo mensagem com o valor 0 (0x00)
 	memset(buffer + 14, 0, TAM_BUFFER - 14);
 	
@@ -91,30 +99,6 @@ int main(int argc, char *argv[]) {
 
 	// 14 bytes eth header e 1500 bytes para mensagem
 	unsigned char buffer[1514];
-
-	//------------------------------------------
-	//HEADER ETHERNET
-
-	// Aloca 14 bytes para o header da ethernet.
-	// 6 bytes MAC addres / 6 bytes MAC destiny / 2 Bytes ethernet type / 1500 mensagem
-	struct eth_header *eth_header_msg1 = (struct eth_header*) buffer;
-
-	// Utiliza a função host to network para atribuir valor ao campo
-	// 0x88B5 é um tipo experimental usado para testes
-	eth_header_msg1->ethertype = htons(0x88B5);
-
-	//Atribui os valores FFFFFFFFFFFFFFF ; significa BROADCAST(envia para todo mundo conectado)
-	memset(eth_header_msg1->dest_mac, 0xFF, 6);
-
-	//Estou usando o MAC do meu endereço HARDWIRED
-	//MAC: dc:0e:a1:c5:dc:f6	; nome da interface 
-	eth_header_msg1->src_mac[0] = 0xdc;
-	eth_header_msg1->src_mac[1] = 0x0e;
-	eth_header_msg1->src_mac[2] = 0xa1;
-	eth_header_msg1->src_mac[3] = 0xc5;
-	eth_header_msg1->src_mac[4]	= 0xdc;
-	eth_header_msg1->src_mac[5] = 0xf6;
-
 
 	//------------------------------------------
 	//SOCKET
