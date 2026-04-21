@@ -33,12 +33,22 @@ int main(int argc, char *argv[]) {
 
 	//Estou usando o MAC do meu endereço HARDWIRED
 	//MAC: 	00:e0:4c:88:00:fc ; nome da interface enx00e04c8800fc
-	eth_header_msg1->src_mac[0] = 0x00;
+	/*eth_header_msg1->src_mac[0] = 0x00;
 	eth_header_msg1->src_mac[1] = 0xe0;
 	eth_header_msg1->src_mac[2] = 0x4c;
 	eth_header_msg1->src_mac[3] = 0x88;
 	eth_header_msg1->src_mac[4]	= 0x00;
-	eth_header_msg1->src_mac[5] = 0xfc;
+	eth_header_msg1->src_mac[5] = 0xfc;*/
+
+	//Estou usando o MAC do meu endereço HARDWIRED
+	//MAC: dc:0e:a1:c5:dc:f6	; nome da interface 
+	eth_header_msg1->src_mac[0] = 0xdc;
+	eth_header_msg1->src_mac[1] = 0x0e;
+	eth_header_msg1->src_mac[2] = 0xa1;
+	eth_header_msg1->src_mac[3] = 0xc5;
+	eth_header_msg1->src_mac[4]	= 0xdc;
+	eth_header_msg1->src_mac[5] = 0xf6;
+
 
 	//------------------------------------------
 	//SOCKET
