@@ -13,13 +13,17 @@
 
 struct kermit {
 
-	uint8_t tam, seq, type ;
-  unsigned char *dados ;
-  uint8_t crc ;
+	uint8_t tam ; //5 bits
+	uint8_t seq ; //6 bits
+	uint8_t type ;//5 bits
+  unsigned char *dados ; //tam bytes
+  uint8_t crc ; //1 byte
 } ;
 
-/*recebe o buffer e o seu numero de bytes utilizados
-  e retorna dados na estrutura*/
+/*
+  recebe o buffer e o seu numero de bytes utilizados
+  e retorna dados na estrutura
+*/
 struct kermit parsing_kermit(unsigned char buffer[TAM_FRAME], int tam) ;
 
 /*

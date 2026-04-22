@@ -4,10 +4,8 @@
 
 int main(int argc, char *argv[]) {
 
-  int sock, i, achouMensagem ;
+  int sock ;
 	unsigned char buffer[TAM_FRAME] ;
-	ssize_t tam ; 
-	unsigned short type ; 
 
 	// SOCKET
   if (argc < 2) {

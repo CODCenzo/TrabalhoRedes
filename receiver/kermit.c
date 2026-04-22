@@ -42,7 +42,7 @@ struct kermit parsing_kermit(unsigned char buffer[TAM_FRAME], int tam) {
 */
 int loop_recv(int sock, unsigned char buffer[TAM_FRAME]) {
 
-  int i, achouMensagem ;
+  int i ;
 	ssize_t tam ;
 	unsigned short type ;
 
