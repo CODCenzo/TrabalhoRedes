@@ -57,6 +57,8 @@ int loop_recv(int sock, unsigned char buffer[TAM_FRAME]) {
 					printf("%02x ", buffer[i]);
 				}
 				printf("\n");
+
+				parsing_kermit(buffer, TAM_FRAME) ;
       }
     }
   }
