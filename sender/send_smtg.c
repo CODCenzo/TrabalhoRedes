@@ -123,7 +123,7 @@ int main(int argc, char *argv[]) {
 
 	//------------------------------------------
 	//SEND BUFFER
-	send(sock, buffer, sizeof(unsigned char) * TAM_BUFFER, 0);
+	send(sock, buffer, sizeof(unsigned char) * TAM_FRAME, 0);
 
 	//------------------------------------------
 
