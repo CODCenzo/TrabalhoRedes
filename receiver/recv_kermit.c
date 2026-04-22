@@ -26,24 +26,24 @@ struct kermit parsing_kermit(unsigned char buffer[TAM_FRAME], int tam) {
   struct kermit k ;
 	uint8_t aux_seq ;
 
-  k.tam = buffer[14] ;
+  k.tam = buffer[15] ;
 	k.tam = k.tam >> 3 ;
 	printf("k.tam: %u\n", (unsigned char) k.tam) ;
 
-  aux_seq = buffer[14];
+  aux_seq = buffer[15];
 
 	//zera os 5 bits mais significativos
   for (int i = 3; i < 8; i++)
 	  aux_seq &= ~(1 << i) ; 
   aux_seq = aux_seq << 5 ;
 
-  k.seq = buffer[15] ;
+  k.seq = buffer[16] ;
   k.seq = k.seq >> 5 ;
 
 	k.seq += aux_seq ;
 	printf("k.seq %u\n", (unsigned char) k.seq) ;
 
-	k.type = buffer[15] ;
+	k.type = buffer[16] ;
   for (int i = 5; i < 7; i++)
 	  k.type &= ~(1 << i) ; 
 	
