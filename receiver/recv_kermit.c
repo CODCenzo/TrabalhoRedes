@@ -18,6 +18,41 @@ struct kermit {
 
 extern int cria_raw_socket(char* nome_interface_rede);
 
+
+/*recebe o buffer e seu numero de bytes utilizados
+  retorna dados na estrutura kermit*/
+struct kermit parsing_kermit(unsigned char buffer[TAM_FRAME], int tam) {
+
+  struct kermit k ;
+	uint8_t aux_seq ;
+
+  k.tam = buffer[14] ;
+	k.tam = k.tam >> 3 ;
+	printf("k.tam: %u\n", (unsigned char) k.tam) ;
+
+  aux_seq = buffer[14];
+
+	//zera os 5 bits mais significativos
+  for (int i = 3; i < 8; i++)
+	  aux_seq &= ~(1 << i) ; 
+  aux_seq = aux_seq << 5 ;
+
+  k.seq = buffer[15] ;
+  k.seq = k.seq >> 5 ;
+
+	k.seq += aux_seq ;
+	printf("k.seq %u\n", (unsigned char) k.seq) ;
+
+	k.type = buffer[15] ;
+  for (int i = 5; i < 7; i++)
+	  k.type &= ~(1 << i) ; 
+	
+	printf("k.type %u\n", (unsigned char) k.type) ;
+
+	return k ;
+}
+
+
 /*
   loop de receptacao de informacoes
 */
@@ -64,39 +99,6 @@ int loop_recv(int sock, unsigned char buffer[TAM_FRAME]) {
   }
  
   return 0 ;
-}
-
-/*recebe o buffer e seu numero de bytes utilizados
-  retorna dados na estrutura kermit*/
-struct kermit parsing_kermit(unsigned char buffer[TAM_FRAME], int tam) {
-
-  struct kermit k ;
-	uint8_t aux_seq ;
-
-  k.tam = buffer[14] ;
-	k.tam = k.tam >> 3 ;
-	printf("k.tam: %u\n", (unsigned char) k.tam) ;
-
-  aux_seq = buffer[14];
-
-	//zera os 5 bits mais significativos
-  for (int i = 3; i < 8; i++)
-	  aux_seq &= ~(1 << i) ; 
-  aux_seq = aux_seq << 5 ;
-
-  k.seq = buffer[15] ;
-  k.seq = k.seq >> 5 ;
-
-	k.seq += aux_seq ;
-	printf("k.seq %u\n", (unsigned char) k.seq) ;
-
-	k.type = buffer[15] ;
-  for (int i = 5; i < 7; i++)
-	  k.type &= ~(1 << i) ; 
-	
-	printf("k.type %u\n", (unsigned char) k.type) ;
-
-	return k ;
 }
 
 int main(int argc, char *argv[]) {
