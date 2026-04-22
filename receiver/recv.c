@@ -5,7 +5,7 @@
 int main(int argc, char *argv[]) {
 
   int sock, i, achouMensagem ;
-	unsigned char buffer[TAM_FRAME], comparador[TAM_FRAME] ;
+	unsigned char buffer[TAM_FRAME] ;
 	ssize_t tam ; 
 	unsigned short type ; 
 
@@ -20,9 +20,9 @@ int main(int argc, char *argv[]) {
   sock = cria_raw_socket(argv[1]);
 
 	// Preenche o vetor com o valor 1
-  memset(comparador, 1, sizeof(comparador));
+  //memset(comparador, 1, sizeof(comparador));
     
-  printf("Ouvindo a interface %s... Pressione Ctrl+C para parar.\n", argv[1]);
+  printf("Ouvindo a interface %s\n", argv[1]);
 
 	loop_recv(sock, buffer) ;
 

@@ -7,11 +7,23 @@
 #include <unistd.h>
 #include <string.h>
 
+#include "socket.h"
+
 #define TAM_FRAME 1514
 
-extern int cria_raw_socket(char* nome_interface_rede);
+struct kermit {
 
-/*recebe o buffer e retorna dados na estrutura*/
-int parsing_kermit(unsigned char buffer[TAM_FRAME]) ;
+	uint8_t tam, seq, type ;
+  unsigned char *dados ;
+  uint8_t crc ;
+} ;
 
+/*recebe o buffer e o seu numero de bytes utilizados
+  e retorna dados na estrutura*/
+struct kermit parsing_kermit(unsigned char buffer[TAM_FRAME], int tam) ;
+
+/*
+  !em construcao
+  loop de recebimento, recebe os dados e processa ;
+*/
 int loop_recv(int sock, unsigned char buffer[TAM_FRAME]) ;
