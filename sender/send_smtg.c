@@ -60,13 +60,11 @@ int build_kermit(unsigned char buffer[TAM_FRAME], uint8_t tam, uint8_t seq,
 	// marcador de inicio
 	memset(buffer + 14, 0x7e, 1) ;
 
-  // tamanho dos dados
+  // campo tamanho
 	uint8_t aux_tam = tam ;
   aux_tam = aux_tam << 3 ;
 
-	//buffer[15] = aux_tam ;
-
-	// sequencia 
+	// campo sequencia 
   // deixa os 3 bits mais significativos
 	uint8_t aux_seq1 = seq ;
   for (int i = 0; i < 3; i++)
@@ -85,7 +83,7 @@ int build_kermit(unsigned char buffer[TAM_FRAME], uint8_t tam, uint8_t seq,
   
 	aux_seq2 = aux_seq2 << 5 ;
 
-	// tipo
+	// campo tipo
 	uint8_t aux_type = type ;
 	
 	buffer[16] = aux_seq2 + aux_type ;
@@ -100,7 +98,6 @@ int main(int argc, char *argv[]) {
 	// 14 bytes eth header e 1500 bytes para mensagem
 	unsigned char buffer[TAM_FRAME];
 
-	//------------------------------------------
 	//SOCKET
 
 	if (argc < 2) {
@@ -112,20 +109,11 @@ int main(int argc, char *argv[]) {
 	// Cria um socket a partir do nome da interface
 	int sock = cria_raw_socket(argv[1]);
 
-	//------------------------------------------
-	//MESSAGE (nosso kermit)
-
-  // Enche o campo mensagem com o valor 1 (0x01)
-	memset(buffer + 14, 1, sizeof(buffer) - 14);
-	
   /*numeros arbitrarios de teste*/
   build_kermit(buffer, 2, 2, 2, 6) ;
 
-	//------------------------------------------
 	//SEND BUFFER
 	send(sock, buffer, sizeof(unsigned char) * TAM_FRAME, 0);
-
-	//------------------------------------------
 
   close(sock);
 
