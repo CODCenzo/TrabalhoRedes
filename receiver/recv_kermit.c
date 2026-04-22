@@ -45,28 +45,27 @@ int parsing_frame(int sock, unsigned char buffer[TAM_FRAME],
         printf("Pacote do tipo 0x88B5 localizado! Tamanho: %ld\n", tam);
 
         //Se a o buffer for igual ao comparador, então a mensagem chegou
-        achouMensagem = 1;
+        /*achouMensagem = 1;
         for (i = 14; i < tam; i++) {
           if (buffer[i] != comparador[i]) {
             achouMensagem = 0;
           }
-        }
+        }*/
 
         // 
-        if (1) {
-          printf("\nAchei a minha própria mensagem\n");
-          printf("ETHERNET FRAME(14 bytes): ");
 
-          for (i = 0; i < 14; i ++) {
-            printf("%02x ", buffer[i]);
-          }
+				printf("\nAchei a minha própria mensagem\n");
+				printf("ETHERNET FRAME(14 bytes): ");
 
-          printf("\nIMPRIMINDO PAYLOAD(%ld bytes): ", tam);
-          for (i = 14; i < tam; i++) {
-            printf("%02x ", buffer[i]);
-          }
-          printf("\n");
-        }
+				for (i = 0; i < 14; i ++) {
+					printf("%02x ", buffer[i]);
+				}
+
+				printf("\nIMPRIMINDO PAYLOAD(%ld bytes): ", tam);
+				for (i = 14; i < tam; i++) {
+					printf("%02x ", buffer[i]);
+				}
+				printf("\n");
       }
     }
   }
