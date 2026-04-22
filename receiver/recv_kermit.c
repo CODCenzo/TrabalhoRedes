@@ -53,7 +53,7 @@ int parsing_frame(int sock, unsigned char buffer[TAM_FRAME],
         }
 
         // 
-        if (achouMensagem) {
+        if (1) {
           printf("\nAchei a minha própria mensagem\n");
           printf("ETHERNET FRAME(14 bytes): ");
 
