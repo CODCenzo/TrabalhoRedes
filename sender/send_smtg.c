@@ -3,7 +3,7 @@
 #include <stdint.h>
 #include "../receiver/socket.h"
 
-#define TAM_BUFFER 1514
+#define TAM_FRAME 1514
 
 // Representa os 14 bytes de header ethernet (AF_PACKET)
 struct eth_header {
@@ -19,7 +19,7 @@ struct eth_header {
    
 	 tam = tamanho da msg
 */
-int build_kermit(unsigned char buffer[TAM_BUFFER], uint8_t tam, uint8_t seq,
+int build_kermit(unsigned char buffer[TAM_FRAME], uint8_t tam, uint8_t seq,
                  uint8_t type, uint8_t crc) {
 
   if (tam > 255 || tam < 0) {
@@ -55,7 +55,7 @@ int build_kermit(unsigned char buffer[TAM_BUFFER], uint8_t tam, uint8_t seq,
 	eth_header_msg1->src_mac[5] = 0xfc;*/
 
   // Enche o campo mensagem com o valor 0 (0x00)
-	memset(buffer + 14, 0, TAM_BUFFER - 14);
+	memset(buffer + 14, 0, TAM_FRAME - 14);
 	
 	// marcador de inicio
 	memset(buffer + 14, 0x7e, 1) ;
@@ -98,7 +98,7 @@ int build_kermit(unsigned char buffer[TAM_BUFFER], uint8_t tam, uint8_t seq,
 int main(int argc, char *argv[]) {
 
 	// 14 bytes eth header e 1500 bytes para mensagem
-	unsigned char buffer[1514];
+	unsigned char buffer[TAM_FRAME];
 
 	//------------------------------------------
 	//SOCKET
@@ -118,7 +118,7 @@ int main(int argc, char *argv[]) {
   // Enche o campo mensagem com o valor 1 (0x01)
 	memset(buffer + 14, 1, sizeof(buffer) - 14);
 	
-
+  /*numeros arbitrarios de teste*/
   build_kermit(buffer, 2, 2, 2, 6) ;
 
 	//------------------------------------------
