@@ -74,9 +74,10 @@ int loop_recv(int sock, unsigned char bufferDeCaptura[MAX_FRAME_SIZE]) {
 				struct kermit k = parsing_kermit(bufferDeCaptura, tamPacote) ;
 				// Debug
 				printf("Parsed -> TAM: %u, SEQ: %u, TYPE: %u, CRC: %02X\n", k.tam, k.seq, k.type, k.crc);
-				for (int i = 3; i < k.tam; i ++) {
+				for (int i = 0; i < k.tam; i ++) {
 					printf("%02x ", *(k.dados + i));
 				}
+				printf("\n");
 				
 				free(k.dados);
       }
