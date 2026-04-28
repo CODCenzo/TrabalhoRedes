@@ -1,11 +1,11 @@
 #include "kermit.h" 
 
-#define TAM_FRAME 1514
+#define MAX_FRAME_SIZE 35
 
 int main(int argc, char *argv[]) {
 
   int sock ;
-	unsigned char buffer[TAM_FRAME] ;
+	unsigned char buffer[MAX_FRAME_SIZE] ;
 
 	// SOCKET
   if (argc < 2) {

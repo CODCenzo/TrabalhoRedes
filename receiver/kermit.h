@@ -7,9 +7,9 @@
 #include <unistd.h>
 #include <string.h>
 
-#include "socket.h"
+#include "../util/socket.h"
 
-#define TAM_FRAME 1514
+#define MAX_FRAME_SIZE 35
 
 struct kermit {
 
@@ -24,10 +24,10 @@ struct kermit {
   recebe o buffer e o seu numero de bytes utilizados
   e retorna dados na estrutura
 */
-struct kermit parsing_kermit(unsigned char buffer[TAM_FRAME], int tam) ;
+struct kermit parsing_kermit(unsigned char buffer[MAX_FRAME_SIZE], int tam);
 
 /*
   !em construcao
   loop de recebimento, recebe os dados e processa ;
 */
-int loop_recv(int sock, unsigned char buffer[TAM_FRAME]) ;
+int loop_recv(int sock, unsigned char bufferDeCaptura[MAX_FRAME_SIZE]);

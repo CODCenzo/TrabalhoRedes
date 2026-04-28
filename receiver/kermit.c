@@ -2,37 +2,42 @@
 
 /*recebe o buffer e seu numero de bytes utilizados
   retorna dados na estrutura kermit*/
-struct kermit parsing_kermit(unsigned char buffer[TAM_FRAME], int tam) {
+struct kermit parsing_kermit(unsigned char buffer[MAX_FRAME_SIZE], int tam) {
 
   struct kermit k ;
 	uint8_t aux_seq ;
 
-  k.tam = buffer[15] ;
+	// Separa o campo tamanhoMsg
+  k.tam = buffer[1] ;
 	k.tam = k.tam >> 3 ;
-	printf("k.tam: %u\n", (unsigned char) k.tam) ;
 
-  aux_seq = buffer[15];
+  aux_seq = buffer[1];
 
 	//zera os 5 bits mais significativos
   for (int i = 3; i < 8; i++)
 	  aux_seq &= ~(1 << i) ; 
   aux_seq = aux_seq << 5 ;
 
-  k.seq = buffer[16] ;
+  k.seq = buffer[2] ;
   k.seq = k.seq >> 5 ;
 
+	// Separa ambas as partes do campo sequência
 	k.seq += aux_seq ;
-	printf("k.seq %u\n", (unsigned char) k.seq) ;
 
-	k.type = buffer[16] ;
-  for (int i = 5; i < 7; i++)
+	// Separada o campo type
+	k.type = buffer[2] ;
+  for (int i = 5; i < 8; i++)
 	  k.type &= ~(1 << i) ; 
 	
-	printf("k.type %u\n", (unsigned char) k.type) ;
+	unsigned char *bufferDadosRecebidos = malloc(k.tam);
+	if (!bufferDadosRecebidos) {
+		perror("parsing_kermit, erro ao alocar bufferDadosRecebidos\n");
+	}
+	memcpy(bufferDadosRecebidos, &buffer[3], k.tam);
 
-	k.dados = &buffer[17] ;
+	k.dados = bufferDadosRecebidos;
 
-  k.crc = buffer[tam -2] ;
+  k.crc = buffer[3 + k.tam] ;
 
 	return k ;
 }
@@ -40,44 +45,40 @@ struct kermit parsing_kermit(unsigned char buffer[TAM_FRAME], int tam) {
 /*
   loop de receptacao de informacoes
 */
-int loop_recv(int sock, unsigned char buffer[TAM_FRAME]) {
+int loop_recv(int sock, unsigned char bufferDeCaptura[MAX_FRAME_SIZE]) {
 
-  int i ;
-	ssize_t tam ;
-	unsigned short type ;
+	ssize_t tamPacote ;
+	uint8_t marcadorInicio ;
 
-  if (!buffer) {
-
+  if (!bufferDeCaptura) {
 	  perror("erro parsing_frame\n") ;
 		exit(1) ;
 	}
 
   while (1) {
+		//Limpa o buffer antes de cada tentatica de captura
+		memset(bufferDeCaptura, 0, MAX_FRAME_SIZE);
 
-    tam = recv(sock, buffer, sizeof(unsigned char) *TAM_FRAME, 0);
+    tamPacote = recv(sock, bufferDeCaptura, MAX_FRAME_SIZE, 0);
         
-    if (tam > 0) {
+    if (tamPacote > 0) {
 
       // Lê o tipo do frame ethernet. Big-end -> Little-end
-      type = ntohs(*(unsigned short *)(buffer + 12));
+      marcadorInicio = bufferDeCaptura[0];
 
-      if (type == 0x88B5) {
-        printf("Pacote do tipo 0x88B5 localizado! Tamanho: %ld\n", tam);
+      if (marcadorInicio == 0x7e) {
+        printf("\nPacote com Marcador 0x7e localizado! Tamanho do pacote: %zd\n", tamPacote);
 
 				printf("\nAchei a minha própria mensagem\n");
-				printf("ETHERNET FRAME(14 bytes): ");
-
-				for (i = 0; i < 14; i ++) {
-					printf("%02x ", buffer[i]);
+				
+				struct kermit k = parsing_kermit(bufferDeCaptura, tamPacote) ;
+				// Debug
+				printf("Parsed -> TAM: %u, SEQ: %u, TYPE: %u, CRC: %02X\n", k.tam, k.seq, k.type, k.crc);
+				for (int i = 3; i < k.tam; i ++) {
+					printf("%02x ", *(k.dados + i));
 				}
-
-				printf("\nIMPRIMINDO PAYLOAD(%ld bytes): ", tam);
-				for (i = 14; i < tam; i++) {
-					printf("%02x ", buffer[i]);
-				}
-				printf("\n");
-
-				parsing_kermit(buffer, TAM_FRAME) ;
+				
+				free(k.dados);
       }
     }
   }
