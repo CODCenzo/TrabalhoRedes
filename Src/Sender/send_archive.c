@@ -1,10 +1,4 @@
-#include <stdlib.h> 
-#include <stdio.h>
-#include <string.h> 
-#include <stdint.h>
-#include <time.h>
-
-#include "send.h"
+#include "../../Headers/kermit_builder.h"
 
 #define BUFFER_SIZE 255
 

@@ -1,6 +1,4 @@
-#include "kermit.h" 
-
-#define MAX_FRAME_SIZE 35
+#include "../../Headers/kermit.h" 
 
 int main(int argc, char *argv[]) {
 
@@ -16,13 +14,11 @@ int main(int argc, char *argv[]) {
 
   // Cria um socket a partir do nome da interface
   sock = cria_raw_socket(argv[1]);
-
-	// Preenche o vetor com o valor 1
-  //memset(comparador, 1, sizeof(comparador));
     
   printf("Ouvindo a interface %s\n", argv[1]);
 
-	loop_recv(sock, buffer) ;
+  // Escuta o socket em loop infinito
+	loopDeCaptura(sock, buffer) ;
 
   close(sock);
 
