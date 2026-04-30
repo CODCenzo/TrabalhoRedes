@@ -5,5 +5,6 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <unistd.h>
- 
-int cria_raw_socket(char* nome_interface_rede) ;
+#include <string.h>
+
+int cria_raw_socket(char* nome_interface_rede);

@@ -1,0 +1,14 @@
+#include <arpa/inet.h>
+#include <net/ethernet.h>
+#include <linux/if_packet.h>
+#include <sys/time.h>
+#include <net/if.h>
+#include <stdlib.h>
+#include <stdio.h>
+
+long long timestamp();
+
+int protocolo_e_valido(char* buffer, int tamanho_buffer);
+
+int recebe_mensagem(int soquete, int timeoutMillis, char* buffer, int tamanho_buffer);
+

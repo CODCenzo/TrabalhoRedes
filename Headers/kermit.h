@@ -7,8 +7,6 @@
 #include <unistd.h>
 #include <string.h>
 
-#include "socket.h"
-
 // 4 bytes campos + 31 bytes de dados
 #define MAX_FRAME_SIZE 35
 
@@ -20,14 +18,20 @@ struct kermit {
   uint8_t crc ; // 8 bits
 } ;
 
-/*
-  recebe o buffer e o seu numero de bytes utilizados
-  e retorna dados na estrutura
-*/
-struct kermit parsing_kermit(unsigned char buffer[MAX_FRAME_SIZE], int tamDados);
+// Cria uma estrutura kermit a partir do buffer capturado
+struct kermit *parsing_kermit(unsigned char bufferCapturado[MAX_FRAME_SIZE], int tamCaptura); 
 
-/*
-  !em construcao
-  loop de recebimento, recebe os dados e processa ;
-*/
-int loopDeCaptura(int sock, unsigned char bufferDeCaptura[MAX_FRAME_SIZE]);
+// Loop infinito que filtra as mensagens
+// Retorna NULL em caso de timeout ou erro
+struct kermit *loopDeCaptura(int sock);
+
+// Constrói e preenche o frame
+// Retorna um buffer com a mensagem completa
+unsigned char* build_kermit(unsigned char *buffer_dados, uint8_t tamMsg, uint8_t seq,
+                 uint8_t type, uint8_t crc) ; 
+
+// Envia a mensagem seguindo o protocolo kermit
+int sendMsg (int socket, uint8_t tamDados, uint8_t sequencia, uint8_t tipo, unsigned char *dadosMsg, uint8_t crc);
+
+// Retorna um valor de 8 bits entre min e max, incluindo eles mesmos
+uint8_t gera_byte_aleat (uint8_t min, uint8_t max) ;

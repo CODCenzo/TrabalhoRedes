@@ -1,10 +1,4 @@
-#include <arpa/inet.h>
-#include <net/ethernet.h>
-#include <linux/if_packet.h>
-#include <sys/time.h>
-#include <net/if.h>
-#include <stdlib.h>
-#include <stdio.h>
+#include "../../Headers/timeout.h" 
 
 // Retorna o tempo do sistema milissegundos
 long long timestamp() {
