@@ -3,11 +3,10 @@
 #include "../../Headers/kermit.h"
 #include "../../Headers/socket.h"
 
-#define ACK_TYPE 0
-#define NACK_TYPE 0
-
-#define DEFAULT_MSG_SIZE 10
-
+// Retorna um valor de 8 bits entre min e max, incluindo eles mesmos
+uint8_t gera_byte_aleat (uint8_t min, uint8_t max) {
+  return rand() % (max - min +1) + min;
+}
 
 int main(int argc, char *argv[]) {
 
@@ -18,7 +17,6 @@ int main(int argc, char *argv[]) {
 	}  
 
 	int socket = cria_raw_socket(argv[1]);
-
   int input;
 
 	//Loop de envio de mensagem
@@ -27,29 +25,21 @@ int main(int argc, char *argv[]) {
 
     if (input == 1) {
       //Send input and wait for ACK
-				unsigned char *bufferDados = malloc(10);
-				
-				if (!bufferDados) {
-				perror("Erro ao alocar mensagem\n");
-				exit(1);
-				}
-				// Preenche o buffer de dados com uma mensagem aleatória
-				memset(bufferDados, gera_byte_aleat(0,255), 10);
+			unsigned char *bufferDados = malloc(DEFAULT_MSG_SIZE);
+			
+			if (!bufferDados) {
+			perror("Erro ao alocar mensagem\n");
+			exit(1);
+			}
+			// Preenche o buffer de dados com uma mensagem aleatória
+			memset(bufferDados, gera_byte_aleat(0,255), DEFAULT_MSG_SIZE);
 
-				if (sendMsg(socket, DEFAULT_MSG_SIZE, 0, 10, bufferDados, 0) == -1) {
-					perror("ERRO AO ENVIAR MENSAGEM\n");
-				}	else {
-					// Espera do ACK
-					struct kermit *k = loopDeCaptura(socket);
-					if (k->type == ACK_TYPE) {
-						perror("ACK RECEBIDO\n");
-						break;
-					}
-				}
-
+			if (sendMsg(socket, DEFAULT_MSG_SIZE, 0, 10, bufferDados, 5) == -1) {
+				printf("Erro ao enviar mensagem, máximo de tentativas excedido\n");
+			}
+			free(bufferDados);
     }
   }
-
 
   return 0;
 }

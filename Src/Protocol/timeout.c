@@ -1,5 +1,7 @@
 #include "../../Headers/timeout.h" 
 
+#include "../../Headers/kermit.h" 
+
 // Retorna o tempo do sistema milissegundos
 long long timestamp() {
 	struct timeval tp;
@@ -9,14 +11,20 @@ long long timestamp() {
 }
  
 //Retorna 0 caso não encontre o marcador inícial do nosso frame
-int protocolo_e_valido(char* buffer, int tamanho_buffer) {
-	if (tamanho_buffer <= 0) { return 0; }
+int protocolo_e_valido(unsigned char* buffer, int tamanho_buffer) {
+	
+	if (tamanho_buffer < MIN_FRAME_SIZE) { 
+		return 0; }
 	// insira a sua validação de protocolo aqui
-	return buffer[0] == 0x7e;
+	if (buffer[0] == 0x7e) {
+		return 1;
+	}
+
+	return 0;
 }
  
 // retorna -1 se deu timeout, ou quantidade de bytes lidos
-int recebe_mensagem(int soquete, int timeoutMillis, char* buffer, int tamanho_buffer) {
+int recebe_mensagem(int soquete, int timeoutMillis, unsigned char* buffer, int tamanho_buffer) {
 	long long comeco = timestamp();
 
 	struct timeval timeout = { 

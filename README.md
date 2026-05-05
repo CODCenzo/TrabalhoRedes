@@ -1,8 +1,9 @@
 TO DO LIST:
-- Interpretar os erros gerados
+- Validação CRC
 
 
 OBS:
-- Revisão da função build kermit, acho q a manipulação dos campo SEQ e TAM
-esta errada
-- A interpretação do campo tamanho foi alterada
+
+
+client_main.c:
+def: Ao pressionar algum botão envia uma mensagem e espera ACK

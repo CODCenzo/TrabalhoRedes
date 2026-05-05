@@ -9,6 +9,15 @@
 
 // 4 bytes campos + 31 bytes de dados
 #define MAX_FRAME_SIZE 35
+#define MIN_FRAME_SIZE 4
+#define MAX_TENTATIVAS_ENVIO 5
+
+#define ACK_TYPE 0
+#define NACK_TYPE 1
+
+#define DEFAULT_MSG_SIZE 10
+
+#define TIMEOUT_MILLIS 400
 
 struct kermit {
 	uint8_t tamDados ; // 5 bits
@@ -27,7 +36,7 @@ struct kermit *loopDeCaptura(int sock);
 
 // Constrói e preenche o frame
 // Retorna um buffer com a mensagem completa
-unsigned char* build_kermit(unsigned char *buffer_dados, uint8_t tamMsg, uint8_t seq,
+unsigned char* buildFrame(unsigned char *buffer_dados, uint8_t tamMsg, uint8_t seq,
                  uint8_t type, uint8_t crc) ; 
 
 // Envia a mensagem seguindo o protocolo kermit

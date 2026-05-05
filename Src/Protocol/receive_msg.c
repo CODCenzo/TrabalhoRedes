@@ -85,8 +85,9 @@ struct kermit *loopDeCaptura(int sock) {
 					printf("%02x ", *(k->dados + i));
 				}
 				printf("\n");
+				break;
 				
-				free(k->dados);
+				// free(k->dados);
       }
     }
   }

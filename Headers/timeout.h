@@ -8,7 +8,7 @@
 
 long long timestamp();
 
-int protocolo_e_valido(char* buffer, int tamanho_buffer);
+int protocolo_e_valido(unsigned char* buffer, int tamanho_buffer);
 
-int recebe_mensagem(int soquete, int timeoutMillis, char* buffer, int tamanho_buffer);
+int recebe_mensagem(int soquete, int timeoutMillis, unsigned char* buffer, int tamanho_buffer);
 
