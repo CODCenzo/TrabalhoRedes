@@ -9,6 +9,33 @@ uint8_t gera_byte_aleat (uint8_t min, uint8_t max) {
   return rand() % (max - min +1) + min;
 }
 
+int recive_file(int sock) {
+
+  struct kermit *pack ;
+  FILE *f ;
+  const char *filepath = "saida.txt" ;
+
+  f = fopen(filepath, "w") ;
+  if (!f) {
+    perror("erro na abertura/criacao de arquivo \n") ;
+    exit(1) ;
+  }
+
+  do {
+
+    // Pega os pacotes
+    pack = loopDeCaptura(sock) ;
+
+    // Escreve no arquivo saida.txt 
+    fwrite(pack->dados, 1, pack->tamDados, f) ;
+
+  } while (pack->type != FINAL_TYPE ) ;
+  //tipo para fim da trasmissao == 16
+
+  return 0 ;
+}
+
+
 int main(int argc, char *argv[]) {
 
 	if (argc < 2) {
@@ -18,7 +45,7 @@ int main(int argc, char *argv[]) {
 	}  
 
 	int socket = cria_raw_socket(argv[1]);
-
+/*
 	unsigned char *bufferDeCaptura = malloc(MAX_FRAME_SIZE);
   if (!bufferDeCaptura) {
     perror("erro ao alocar buffer de captura\n") ;
@@ -52,6 +79,12 @@ int main(int argc, char *argv[]) {
 
   }
 	free(bufferDeCaptura);
+  */
+
+  recive_file(socket) ;
+
   return 0;
+
+  
 }
 

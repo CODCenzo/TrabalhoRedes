@@ -1,3 +1,6 @@
+#ifndef _KERMIT_H_
+#define _KERMIT_H_
+
 #include <arpa/inet.h>
 #include <net/ethernet.h>
 #include <linux/if_packet.h>
@@ -11,9 +14,12 @@
 #define MAX_FRAME_SIZE 35
 #define MIN_FRAME_SIZE 4
 #define MAX_TENTATIVAS_ENVIO 5
+#define MAX_DADOS 31
 
 #define ACK_TYPE 0
 #define NACK_TYPE 1
+#define DATA_TYPE 4
+#define FINAL_TYPE 16
 
 #define DEFAULT_MSG_SIZE 10
 
@@ -23,7 +29,7 @@ struct kermit {
 	uint8_t tamDados ; // 5 bits
 	uint8_t seq ; // 6 bits
 	uint8_t type ;// 5 bits
-  unsigned char *dados ;
+  unsigned char dados[MAX_DADOS] ;
   uint8_t crc ; // 8 bits
 } ;
 
@@ -44,3 +50,6 @@ int sendMsg (int socket, uint8_t tamDados, uint8_t sequencia, uint8_t tipo, unsi
 
 // Retorna um valor de 8 bits entre min e max, incluindo eles mesmos
 uint8_t gera_byte_aleat (uint8_t min, uint8_t max) ;
+
+
+#endif

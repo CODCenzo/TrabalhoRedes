@@ -1,3 +1,6 @@
+#ifndef _TIMEOUT_H_
+#define _TIMEOUT_H_
+
 #include <arpa/inet.h>
 #include <net/ethernet.h>
 #include <linux/if_packet.h>
@@ -12,3 +15,4 @@ int protocolo_e_valido(unsigned char* buffer, int tamanho_buffer);
 
 int recebe_mensagem(int soquete, int timeoutMillis, unsigned char* buffer, int tamanho_buffer);
 
+#endif
