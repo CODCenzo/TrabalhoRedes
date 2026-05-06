@@ -14,6 +14,7 @@ int recive_file(int sock) {
   struct kermit *pack ;
   FILE *f ;
   const char *filepath = "saida.txt" ;
+  //unsigned char *frameAck ;
 
   f = fopen(filepath, "w") ;
   if (!f) {
@@ -27,7 +28,12 @@ int recive_file(int sock) {
     pack = loopDeCaptura(sock) ;
 
     // Escreve no arquivo saida.txt 
-    fwrite(pack->dados, 1, pack->tamDados, f) ;
+    fwrite((char *) pack->dados, sizeof(char), pack->tamDados, f) ;
+
+    /*frameAck = buildFrame(NULL, 0, pack->seq, ACK_TYPE, 1);
+    send(sock, frameAck, MIN_FRAME_SIZE, 0) ;*/
+
+    printf("aqui\n") ;
 
   } while (pack->type != FINAL_TYPE ) ;
   //tipo para fim da trasmissao == 16
@@ -45,41 +51,6 @@ int main(int argc, char *argv[]) {
 	}  
 
 	int socket = cria_raw_socket(argv[1]);
-/*
-	unsigned char *bufferDeCaptura = malloc(MAX_FRAME_SIZE);
-  if (!bufferDeCaptura) {
-    perror("erro ao alocar buffer de captura\n") ;
-  }
-
-	// Loop de espera e tratamento
-  while (1) {
-		// Recebe mensagens e envia resposta
-		int tamanhoCapturado = recebe_mensagem(socket, TIMEOUT_MILLIS, bufferDeCaptura, MAX_FRAME_SIZE);
-
-		if (tamanhoCapturado > 0) {
-			struct kermit *resposta = parsing_kermit(bufferDeCaptura, tamanhoCapturado);
-			printf("MENSAGEM RECEBIDA, TIPO: %d\n", resposta->type);
-
-			unsigned char *bufferDados = malloc(DEFAULT_MSG_SIZE);
-
-			if (!bufferDados) {
-				perror("Erro ao alocar mensagem\n");
-				exit(1);
-			}
-			// Preenche o buffer de dados com uma mensagem aleatória
-			memset(bufferDados, gera_byte_aleat(0,255), DEFAULT_MSG_SIZE);
-
-			unsigned char *frameCompleto = buildFrame(bufferDados, DEFAULT_MSG_SIZE, 0,ACK_TYPE,1);
-
-			send(socket, frameCompleto, DEFAULT_MSG_SIZE + 4, 0);
-
-			free(bufferDados);
-			free(frameCompleto);
-		}
-
-  }
-	free(bufferDeCaptura);
-  */
 
   recive_file(socket) ;
 

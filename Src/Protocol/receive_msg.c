@@ -45,6 +45,7 @@ struct kermit *parsing_kermit(unsigned char bufferCapturado[MAX_FRAME_SIZE], int
   *loop de receptacao de informacoes
   *aloca a estrutura kermit
   *recebe UM pacote
+  *MANDA O ACK ->> MUDAR, NAO DEVERIA
 */
 struct kermit *loopDeCaptura(int sock) {
 
@@ -76,10 +77,9 @@ struct kermit *loopDeCaptura(int sock) {
 
       break ;
     }   
-
   }
-  free(bufferDados);
 
+  free(bufferDados);
   free(bufferDeCaptura);
  
   return pack ;

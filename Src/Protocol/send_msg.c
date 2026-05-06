@@ -15,7 +15,7 @@ unsigned char* buildFrame(unsigned char *bufferDados, uint8_t tamDados, uint8_t 
                  uint8_t type, uint8_t crc) {
 
 	//Verifica os parâmetros da função
-	if (!bufferDados) {
+	if (!bufferDados && tamDados > 0 ) {
 		perror("Erro buildFrame, buffer vazio\n");
 		return NULL;
 	} 
@@ -78,8 +78,8 @@ int sendMsg (int socket, uint8_t tamDados, uint8_t sequencia, uint8_t tipo, unsi
 		return -1;
 	}
 
-	int tentativasEnvio = 0;
-	do {
+	//int tentativasEnvio = 0;
+	//do {
 		if (send(socket, frameCompleto, tamFrameCompleto, 0) == -1) {
 			perror("ERRO AO ENVIAR FRAME\n");
 			return -1;
@@ -88,24 +88,24 @@ int sendMsg (int socket, uint8_t tamDados, uint8_t sequencia, uint8_t tipo, unsi
 		// imprimeFrame(frameCompleto, tamFrameCompleto);
 
 		// Lógica para receber resposta
-		int tamanhoCapturado = recebe_mensagem(socket, TIMEOUT_MILLIS, bufferCaptura, MAX_FRAME_SIZE);
+		//int tamanhoCapturado = recebe_mensagem(socket, TIMEOUT_MILLIS, bufferCaptura, MAX_FRAME_SIZE);
 
 		// Analise da resposta
-		if (tamanhoCapturado > 0) {
-			struct kermit *resposta = parsing_kermit(bufferCaptura, tamanhoCapturado);
+		//if (tamanhoCapturado > 0) {
+			//struct kermit *resposta = parsing_kermit(bufferCaptura, tamanhoCapturado);
 
-			if (resposta->type == ACK_TYPE && resposta->seq == sequencia) {
-				printf("ACK RECEBIDO\n");
-				free(frameCompleto);
-				return 1;
-			} else if (resposta->type == NACK_TYPE) {
-				printf("NACK RECEBIDO, ENVIANDO MSG NOVAMENTE\n");
-			}
-		} else {
-			printf("NENHUM DADO FOI LIDO (TIMEOUT), ENVIANDO MSG NOVAMENTE\n");
-		}
-		tentativasEnvio ++;
-	} while (tentativasEnvio < MAX_TENTATIVAS_ENVIO);
+			//if (resposta->type == ACK_TYPE && resposta->seq == sequencia) {
+				//printf("ACK RECEBIDO\n");
+				//free(frameCompleto);
+				//return 1;
+			//} else if (resposta->type == NACK_TYPE) {
+			//	printf("NACK RECEBIDO, ENVIANDO MSG NOVAMENTE\n");
+			//}
+		//} else {
+			//printf("NENHUM DADO FOI LIDO (TIMEOUT), ENVIANDO MSG NOVAMENTE\n");
+		//}
+		//tentativasEnvio ++;
+	//} while (tentativasEnvio < MAX_TENTATIVAS_ENVIO);
 
 	free(frameCompleto);
 	free(bufferCaptura);
