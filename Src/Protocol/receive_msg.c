@@ -2,6 +2,19 @@
 #include "../../Headers/timeout.h" 
 
 
+void print_kermit(struct kermit k) {
+
+  printf("===============================\n") ;
+  printf("tamDados: %u\n", (unsigned int) k.tamDados) ;
+  printf("seq %u\n", (unsigned int) k.seq) ;
+  printf("type %u\n", (unsigned int) k.type) ;
+  for (int i = 0; i < k.tamDados; i++)
+    printf("%c", (char) k.dados[i] ) ;
+  printf("\n") ;
+  printf("crc %u\n", (unsigned int) k.crc) ;
+  printf("===============================\n") ;
+}
+
 /*recebe o buffer e seu numero de bytes utilizados
   retorna dados na estrutura kermit*/
 struct kermit *parsing_kermit(unsigned char bufferCapturado[MAX_FRAME_SIZE], int tamCaptura) {
@@ -18,7 +31,7 @@ struct kermit *parsing_kermit(unsigned char bufferCapturado[MAX_FRAME_SIZE], int
 	//zera os 5 bits mais significativos
   for (int i = 3; i < 8; i++)
 	  aux_seq &= ~(1 << i) ; 
-  aux_seq = aux_seq << 5 ;
+  aux_seq = aux_seq << 3 ;
 
 	// Separa os LSB do seq
   k->seq = bufferCapturado[2] ;
@@ -45,7 +58,6 @@ struct kermit *parsing_kermit(unsigned char bufferCapturado[MAX_FRAME_SIZE], int
   *loop de receptacao de informacoes
   *aloca a estrutura kermit
   *recebe UM pacote
-  *MANDA O ACK ->> MUDAR, NAO DEVERIA
 */
 struct kermit *loopDeCaptura(int sock) {
 

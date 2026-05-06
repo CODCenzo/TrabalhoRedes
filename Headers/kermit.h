@@ -51,5 +51,7 @@ int sendMsg (int socket, uint8_t tamDados, uint8_t sequencia, uint8_t tipo, unsi
 // Retorna um valor de 8 bits entre min e max, incluindo eles mesmos
 uint8_t gera_byte_aleat (uint8_t min, uint8_t max) ;
 
+void print_kermit(struct kermit k) ;
+
 
 #endif

@@ -11,6 +11,8 @@ uint8_t gera_byte_aleat (uint8_t min, uint8_t max) {
 
 int recive_file(int sock) {
 
+  uint8_t cont ;
+  uint8_t aux_type ;
   struct kermit *pack ;
   FILE *f ;
   const char *filepath = "saida.txt" ;
@@ -22,21 +24,32 @@ int recive_file(int sock) {
     exit(1) ;
   }
 
+  cont = 0 ;
   do {
 
     // Pega os pacotes
-    pack = loopDeCaptura(sock) ;
+    do {
+      pack = loopDeCaptura(sock) ; 
+      printf("pack->seq: %u\n", (unsigned int) pack->seq) ;
 
-    // Escreve no arquivo saida.txt 
+      // Dropa o pacote
+      if (cont != pack->seq)
+        free(pack) ;
+
+    } while (cont != pack->seq) ;
+
+    print_kermit(*pack) ;
+
+    // Escreve no arquivo saida.txt e dropa o pacote
     fwrite((char *) pack->dados, sizeof(char), pack->tamDados, f) ;
 
-    /*frameAck = buildFrame(NULL, 0, pack->seq, ACK_TYPE, 1);
-    send(sock, frameAck, MIN_FRAME_SIZE, 0) ;*/
+    aux_type = pack->type ;
+    free(pack) ;
+    cont++ ;
 
-    printf("aqui\n") ;
-
-  } while (pack->type != FINAL_TYPE ) ;
+  } while (aux_type != FINAL_TYPE ) ;
   //tipo para fim da trasmissao == 16
+  printf("cont: %d\n", cont) ;
 
   return 0 ;
 }

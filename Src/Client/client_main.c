@@ -15,7 +15,8 @@ int send_file(const char *filepath, int sock, int tipo) {
   unsigned char buffer[TAM_DADOS] ;
  // unsigned char *frameAck ;
   FILE *f ;
-  int n_read, seq, tipo_aux ;
+  int n_read; 
+  uint8_t seq, tipo_aux ;
 
   f = fopen(filepath, "rb") ;
 
@@ -30,11 +31,6 @@ int send_file(const char *filepath, int sock, int tipo) {
   while (n_read == TAM_DADOS) {
 
     n_read = fread(buffer, 1, TAM_DADOS, f) ;
-
-    for (int i = 0; i < TAM_DADOS; i++) {
-      printf("%c", buffer[i]) ;
-    }
-    printf("\n") ;
     
     if (n_read < TAM_DADOS) {
       tipo_aux = FINAL_TYPE ;     
@@ -42,11 +38,12 @@ int send_file(const char *filepath, int sock, int tipo) {
     //crc nao implementado 
     sendMsg (sock, n_read, seq, tipo_aux, buffer, 0) ;
 
-    /*seq++ ;
+    seq++ ;
     if (seq == 64)
-      seq = 0 ;*/
+      seq = 0 ;
 
-    printf("aqui\n") ;
+    printf("seq: %u \n", seq) ;
+
   }
 
   fclose(f) ;
@@ -63,22 +60,7 @@ int main(int argc, char *argv[]) {
 
 	int socket = cria_raw_socket(argv[1]);
 
-	//Loop de envio de mensagem
-      /*//Send input and wait for ACK
-			unsigned char *bufferDados = malloc(DEFAULT_MSG_SIZE);
-			
-			if (!bufferDados) {
-			perror("Erro ao alocar mensagem\n");
-			exit(1);
-			}
-			// Preenche o buffer de dados com uma mensagem aleatória
-			memset(bufferDados, gera_byte_aleat(0,255), DEFAULT_MSG_SIZE);
-
-			if (sendMsg(socket, DEFAULT_MSG_SIZE, 0, 10, bufferDados, 5) == -1) {
-				printf("Erro ao enviar mensagem, máximo de tentativas excedido\n");
-			}
-			free(bufferDados);*/
-  send_file("../../Files/msg.txt", socket, 5) ;
+  send_file("../../Files/msg.txt", socket, DATA_TYPE) ;
 
   return 0;
 }
