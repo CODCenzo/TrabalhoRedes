@@ -1,7 +1,6 @@
 #ifndef _SOCKET_H_
 #define _SOCKET_H_
 
-
 #include <arpa/inet.h>
 #include <net/ethernet.h>
 #include <linux/if_packet.h>

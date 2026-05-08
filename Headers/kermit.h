@@ -4,6 +4,7 @@
 #include <arpa/inet.h>
 #include <net/ethernet.h>
 #include <linux/if_packet.h>
+#include <sys/time.h>
 #include <net/if.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -15,6 +16,7 @@
 #define MIN_FRAME_SIZE 4
 #define MAX_TENTATIVAS_ENVIO 5
 #define MAX_DADOS 31
+#define MIN_DADOS 10
 
 #define ACK_TYPE 0
 #define NACK_TYPE 1
@@ -23,35 +25,41 @@
 
 #define DEFAULT_MSG_SIZE 10
 
-#define TIMEOUT_MILLIS 400
+#define TIMEOUT_MILLIS 1000
 
 struct kermit {
 	uint8_t tamDados ; // 5 bits
 	uint8_t seq ; // 6 bits
 	uint8_t type ;// 5 bits
-  unsigned char dados[MAX_DADOS] ;
+  unsigned char *dados ;
   uint8_t crc ; // 8 bits
 } ;
 
-// Cria uma estrutura kermit a partir do buffer capturado
-struct kermit *parsing_kermit(unsigned char bufferCapturado[MAX_FRAME_SIZE], int tamCaptura); 
+void print_kermit(struct kermit *k);
 
-// Loop infinito que filtra as mensagens
-// Retorna NULL em caso de timeout ou erro
-struct kermit *loopDeCaptura(int sock);
+void imprimeFrame (unsigned char *bufferFrame, int tamFrameCompleto);
 
-// Constrói e preenche o frame
-// Retorna um buffer com a mensagem completa
-unsigned char* buildFrame(unsigned char *buffer_dados, uint8_t tamMsg, uint8_t seq,
-                 uint8_t type, uint8_t crc) ; 
+// Aloca e preenche uma estrutura kermit com os dados do buffer 
+struct kermit *parsing_kermit(unsigned char *bufferCapturado, int tamCaptura);
 
-// Envia a mensagem seguindo o protocolo kermit
-int sendMsg (int socket, uint8_t tamDados, uint8_t sequencia, uint8_t tipo, unsigned char *dadosMsg, uint8_t crc);
+// Constrói e preenche o frame. O tamanhoFrame min é 4 sempre e o máximo é 35
+// Falta implementar CRC
+unsigned char* buildFrame(unsigned char *bufferDados, uint8_t tamDados, uint8_t seq,
+                          uint8_t type, uint8_t crc);
 
-// Retorna um valor de 8 bits entre min e max, incluindo eles mesmos
-uint8_t gera_byte_aleat (uint8_t min, uint8_t max) ;
+// Contrói o frame e envia pelo socket. Não trata de ACK ou NACK
+// Não é possível enviar mensagens menores que 14
+int sendMsg (int socket, uint8_t tamDados, uint8_t sequencia, uint8_t tipo, 
+            unsigned char *dadosMsg, uint8_t crc);
 
-void print_kermit(struct kermit k) ;
+// Retorna o tempo do sistema em milissegundos
+long long timestamp();
 
+// Verifica tamanho do buffer e marcador inicíal
+int protocolo_e_valido(unsigned char* buffer, int tamanho_buffer);
+
+// Loop que lê o socket em busca de pacotes válidos
+// retorna -1 se deu timeout, ou quantidade de bytes lidos
+int recebe_mensagem(int soquete, int timeoutMillis, unsigned char* buffer, int tamanho_buffer);
 
 #endif
