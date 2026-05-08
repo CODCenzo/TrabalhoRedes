@@ -58,18 +58,18 @@ struct kermit *parsing_kermit(unsigned char *bufferCapturado, int tamCaptura) {
   for (int i = 5; i < 8; i++)
 	  k->type &= ~(1 << i) ; 
 	
-	// Copia os dados do buffer para a struct
-	k->dados = malloc(k->tamDados);
-	if (!k->dados) {
-		free(k);
-		return NULL;
-	}
 
   if (tamCaptura > 4) {
-    memcpy(k->dados, &bufferCapturado[3], k->tamDados);
+		// Copia os dados do buffer para a struct
+		k->dados = malloc(k->tamDados);
+		if (!k->dados) {
+			free(k);
+			return NULL;
+		}
+		memcpy(k->dados, &bufferCapturado[3], k->tamDados);
   } else {
-    k->dados = NULL;
-  }
+		k->dados = NULL;
+	}
 
 	// Separa o CRC
   k->crc = bufferCapturado[3 + k->tamDados] ;
@@ -100,14 +100,20 @@ unsigned char* buildFrame(unsigned char *bufferDados, uint8_t tamDados, uint8_t 
 		return NULL;
 	}
 
+	unsigned char *bufferPaddingTotal = NULL;
 	// PADDING TOTAL
 	if (tamDados == 0) {
 		tamDados = 10;
-		unsigned char *bufferPaddingTotal[10];
+		bufferPaddingTotal = malloc (tamDados);
+		if (!bufferPaddingTotal) {
+			perror("Erro buildFrame, erro ao alocar buffer de padding\n");
+			return NULL;
+		}
 		memset(bufferPaddingTotal, 0, tamDados);
 	}
 
 	// PADDING PARCIAL
+	// tem que implementar
 
 	unsigned char *bufferFrame = malloc (tamDados + 4);
 	if (!bufferFrame) {
@@ -125,8 +131,10 @@ unsigned char* buildFrame(unsigned char *bufferDados, uint8_t tamDados, uint8_t 
   bufferFrame[2] = ((seq & 0x07) << 5) | (type & 0x1F);
 
 	// Campo Dados
-	if (bufferDados != NULL) {
+	if (bufferDados != NULL && bufferPaddingTotal == NULL) {
 		memcpy(bufferFrame + 3, bufferDados ,tamDados);
+	} else {
+		memcpy(bufferFrame + 3, bufferPaddingTotal ,tamDados);
 	}
 
 	// Campo CRC (8bits)

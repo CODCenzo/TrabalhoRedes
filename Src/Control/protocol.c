@@ -25,13 +25,20 @@ int wait_response (int socket, uint8_t msgSequence) {
   // Recebemos a mensagem na sequencia errada, enviar NACK do msgSequence
   if (parsedPacket->seq != msgSequence || parsedPacket->type == NACK_TYPE) {
     printf("NACK SEQUENCE %d\n", msgSequence);
+    if (parsedPacket->dados != NULL) {free(parsedPacket->dados);}
+    free(parsedPacket);
     return NACK_TYPE;
   }
 
   if (parsedPacket->type == ACK_TYPE) {
     printf("ACK SEQUENCE %d\n", msgSequence);
+    if (parsedPacket->dados != NULL) {free(parsedPacket->dados);}
+    free(parsedPacket);
     return ACK_TYPE;
   }
+
+  if (parsedPacket->dados != NULL) {free(parsedPacket->dados);}
+  free(parsedPacket);
 
   printf("WAITING RESPONSE ERROR\n");
   return -1;
@@ -71,7 +78,7 @@ int send_file (int socket, const char *filepath, int fileType) {
   do {
     bytesLidos = fread(buffer, 1, TAM_MAX_DADOS, f);
 
-    if ((fileSize - ftell(f)) <= 31) {
+    if (bytesLidos < TAM_MAX_DADOS) {
       typeAux = FINAL_TYPE;
     }
 
@@ -163,7 +170,7 @@ int receive_file (int socket) {
       fwrite(parsedPacket->dados, 1, parsedPacket->tamDados, f);
 
       auxType = parsedPacket->type;
-      counter = counter + 1 % 64;
+      counter = (counter + 1) % 64;
     }
 
     print_kermit(parsedPacket);

@@ -25,7 +25,7 @@
 
 #define DEFAULT_MSG_SIZE 10
 
-#define TIMEOUT_MILLIS 1000
+#define TIMEOUT_MILLIS 200
 
 struct kermit {
 	uint8_t tamDados ; // 5 bits
