@@ -1,6 +1,6 @@
 #include "kermit.h"
 
-#define MAX_TIMEOUTS_SEGUIDOS 25
+#define MAX_TIMEOUTS_SEGUIDOS 50
 
 // Espera por resposta do tipo ACK ou NACK.
 // Retorna ACK_TYPE, NACK_TYPE, 2 em caso de timeout e -1 em ERRO

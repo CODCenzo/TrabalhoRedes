@@ -14,7 +14,7 @@
 // 4 bytes campos + 31 bytes de dados
 #define MAX_FRAME_SIZE 35
 #define MIN_FRAME_SIZE 4
-#define MAX_TENTATIVAS_ENVIO 5
+#define MAX_TENTATIVAS_ENVIO 25
 #define MAX_DADOS 31
 #define MIN_DADOS 10
 
@@ -25,7 +25,7 @@
 
 #define DEFAULT_MSG_SIZE 10
 
-#define TIMEOUT_MILLIS 200
+#define TIMEOUT_MILLIS 50
 
 struct kermit {
 	uint8_t tamDados ; // 5 bits
