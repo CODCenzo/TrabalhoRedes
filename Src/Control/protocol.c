@@ -21,6 +21,7 @@ int wait_response (int socket, uint8_t msgSequence) {
   }
 
   struct kermit *parsedPacket = parsing_kermit(bufferDeCaptura, tamanhoCapturado);
+  // printf("Tamanho capturado: %d\n");
 
   // Recebemos a mensagem na sequencia errada, enviar NACK do msgSequence
   if (parsedPacket->seq != msgSequence || parsedPacket->type == NACK_TYPE) {
