@@ -59,7 +59,7 @@ struct kermit *parsing_kermit(unsigned char *bufferCapturado, int tamCaptura) {
 	  k->type &= ~(1 << i) ; 
 	
 
-  if (k->dados > 0) {
+  if (k->tamDados > 0) {
 		// Copia os dados do buffer para a struct
 		k->dados = malloc(k->tamDados);
 		if (!k->dados) {
@@ -121,7 +121,7 @@ unsigned char* buildFrame(unsigned char *bufferDados, uint8_t tamDados, uint8_t 
   bufferFrame[2] = ((seq & 0x07) << 5) | (type & 0x1F);
 
 	// Campo Dados
-	if (bufferDados != NULL) {
+	if (bufferDados != NULL && tamDados > 0) {
 		memcpy(bufferFrame + 3, bufferDados ,tamDados);
 	} 
   
@@ -143,11 +143,16 @@ int sendMsg (int socket, uint8_t tamDados, uint8_t sequencia, uint8_t tipo, unsi
 		return -1;
 	}
 
-	unsigned int tamFrameCompleto = sizeof(frameCompleto); 
+	int padding = 0;
+	if (tamDados < 10) {
+		padding = 10;
+	}
+	unsigned int tamFrameCompleto = tamDados + 4 + padding; 
 	// printf("FRAME CONSTRUÍDO COM SUCESSO\n");
 
 	// imprimeFrame(frameCompleto, tamFrameCompleto);
 
+	printf("TAMANHO FRAME: %d\n", tamFrameCompleto);
 	if (send(socket, frameCompleto, tamFrameCompleto, 0) == -1) {
 		perror("ERRO AO ENVIAR FRAME\n");
 		return -1;

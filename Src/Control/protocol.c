@@ -94,6 +94,11 @@ int send_file (int socket, const char *filepath, int fileType) {
       tentativas++;
     } while (tentativas < MAX_TENTATIVAS_ENVIO);
 
+    if (tentativas >= MAX_TENTATIVAS_ENVIO) {
+      perror("ERRO MAXIMO DE TENTATIVAS\n");
+      return -1;
+    }
+
     printf("PACOTE %d ENVIADO COM SUCESSO, ACK RECEBIDO _send_file\n", msgSequence);
 
     msgSequence++;
