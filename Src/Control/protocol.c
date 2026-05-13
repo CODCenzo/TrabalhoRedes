@@ -94,7 +94,7 @@ int send_file (int socket, const char *filepath, int fileType) {
       tentativas++;
     } while (tentativas < MAX_TENTATIVAS_ENVIO);
 
-    printf("PACOTE %d ENVIADO COM SUCESSO, ACK RECEBIDO\n", msgSequence);
+    printf("PACOTE %d ENVIADO COM SUCESSO, ACK RECEBIDO _send_file\n", msgSequence);
 
     msgSequence++;
     // Reinicia a sequencia de envio

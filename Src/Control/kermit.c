@@ -59,7 +59,7 @@ struct kermit *parsing_kermit(unsigned char *bufferCapturado, int tamCaptura) {
 	  k->type &= ~(1 << i) ; 
 	
 
-  if (tamCaptura > 4) {
+  if (k->dados > 0) {
 		// Copia os dados do buffer para a struct
 		k->dados = malloc(k->tamDados);
 		if (!k->dados) {
@@ -99,23 +99,13 @@ unsigned char* buildFrame(unsigned char *bufferDados, uint8_t tamDados, uint8_t 
 		perror("Erro buildFrame, o campo type é maior que 31\n");
 		return NULL;
 	}
-
-	unsigned char *bufferPaddingTotal = NULL;
-	// PADDING TOTAL
-	if (tamDados == 0) {
-		tamDados = 10;
-		bufferPaddingTotal = malloc (tamDados);
-		if (!bufferPaddingTotal) {
-			perror("Erro buildFrame, erro ao alocar buffer de padding\n");
-			return NULL;
-		}
-		memset(bufferPaddingTotal, 0, tamDados);
+  
+  uint8_t tam_padding = 0;
+	if (tamDados < 10) {
+    tam_padding = 10;
 	}
 
-	// PADDING PARCIAL
-	// tem que implementar
-
-	unsigned char *bufferFrame = malloc (tamDados + 4);
+	unsigned char *bufferFrame = malloc (tamDados+ 4 +tam_padding);
 	if (!bufferFrame) {
 		perror("Erro buildFrame, erro ao alocar frame\n");
 		return NULL;
@@ -131,11 +121,11 @@ unsigned char* buildFrame(unsigned char *bufferDados, uint8_t tamDados, uint8_t 
   bufferFrame[2] = ((seq & 0x07) << 5) | (type & 0x1F);
 
 	// Campo Dados
-	if (bufferDados != NULL && bufferPaddingTotal == NULL) {
+	if (bufferDados != NULL) {
 		memcpy(bufferFrame + 3, bufferDados ,tamDados);
-	} else {
-		memcpy(bufferFrame + 3, bufferPaddingTotal ,tamDados);
-	}
+	} 
+  
+  memset(bufferFrame +4 +tamDados, 0, tam_padding);
 
 	// Campo CRC (8bits)
 	bufferFrame[3 + tamDados] = crc;
@@ -153,7 +143,7 @@ int sendMsg (int socket, uint8_t tamDados, uint8_t sequencia, uint8_t tipo, unsi
 		return -1;
 	}
 
-	unsigned int tamFrameCompleto = tamDados + 4; 
+	unsigned int tamFrameCompleto = sizeof(frameCompleto); 
 	// printf("FRAME CONSTRUÍDO COM SUCESSO\n");
 
 	// imprimeFrame(frameCompleto, tamFrameCompleto);
