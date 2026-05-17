@@ -2,6 +2,8 @@
 #include <stdlib.h> 
 #include <string.h> 
 
+#include "../../Headers/game.h" 
+
 #define MAZE_SIZE 40
 
 /*imprime o tabuleiro com o estado atual do jogo
@@ -44,9 +46,9 @@ void print_maze(char **m, const char *filepath ) {
   fclose(f) ;
 }
 
-int main() {
+/*int main() {
 
   print_maze(NULL, NULL) ;
 
   return 0;
-}
+}*/
