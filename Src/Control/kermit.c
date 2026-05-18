@@ -26,7 +26,7 @@ void imprimeFrame (unsigned char *bufferFrame, int tamFrameCompleto) {
 // Melhorar lógica usando máscaras
 struct kermit *parsing_kermit(unsigned char *bufferCapturado, int tamCaptura) {
 
-  if (tamCaptura < 4) {
+  if (tamCaptura < MIN_FRAME_SIZE) {
     perror("ERRO PARSING KERMIT\n");
     return NULL;
   }
@@ -83,11 +83,8 @@ unsigned char* buildFrame(unsigned char *bufferDados, uint8_t tamDados, uint8_t 
                  uint8_t type, uint8_t crc) {
 
 	//Verifica os parâmetros da função
-	if (tamDados < 0 ) {
-		perror("Erro buildFrame, tamanho do buffer negativo\n");
-		return NULL;
-	} 
-	else if (tamDados > 31) {
+
+	if (tamDados > 31) {
 		perror("Erro buildFrame, o tamanho da mensagem é maior que 31\n");
 		return NULL;
 	}
@@ -105,7 +102,7 @@ unsigned char* buildFrame(unsigned char *bufferDados, uint8_t tamDados, uint8_t 
     tam_padding = 10;
 	}
 
-	unsigned char *bufferFrame = malloc (tamDados+ 4 +tam_padding);
+	unsigned char *bufferFrame = malloc (tamDados + 4 + tam_padding);
 	if (!bufferFrame) {
 		perror("Erro buildFrame, erro ao alocar frame\n");
 		return NULL;
@@ -125,7 +122,7 @@ unsigned char* buildFrame(unsigned char *bufferDados, uint8_t tamDados, uint8_t 
 		memcpy(bufferFrame + 3, bufferDados ,tamDados);
 	} 
   
-  memset(bufferFrame +4 +tamDados, 0, tam_padding);
+  memset(bufferFrame + 4 + tamDados, 0, tam_padding);
 
 	// Campo CRC (8bits)
 	bufferFrame[3 + tamDados] = crc;
@@ -149,15 +146,15 @@ int sendMsg (int socket, uint8_t tamDados, uint8_t sequencia, uint8_t tipo, unsi
 	}
 	unsigned int tamFrameCompleto = tamDados + 4 + padding; 
 	// printf("FRAME CONSTRUÍDO COM SUCESSO\n");
-
 	// imprimeFrame(frameCompleto, tamFrameCompleto);
+	// printf("TAMANHO FRAME: %d\n", tamFrameCompleto);
 
-	printf("TAMANHO FRAME: %d\n", tamFrameCompleto);
 	if (send(socket, frameCompleto, tamFrameCompleto, 0) == -1) {
 		perror("ERRO AO ENVIAR FRAME\n");
 		return -1;
 	}
-	// printf("FRAME ENVIADO\n");
+
+	printf("FRAME ENVIADO\n");
 	free(frameCompleto);
 
   return 1;

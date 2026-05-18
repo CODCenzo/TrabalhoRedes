@@ -13,8 +13,8 @@
 
 // 4 bytes campos + 31 bytes de dados
 #define MAX_FRAME_SIZE 35
-#define MIN_FRAME_SIZE 4
-#define MAX_TENTATIVAS_ENVIO 25
+#define MIN_FRAME_SIZE 14
+#define MAX_TENTATIVAS_ENVIO 100
 #define MAX_DADOS 31
 #define MIN_DADOS 10
 
@@ -22,6 +22,8 @@
 #define NACK_TYPE 1
 #define DATA_TYPE 4
 #define FINAL_TYPE 16
+
+#define DEFAULT_CRC 1
 
 #define DEFAULT_MSG_SIZE 10
 

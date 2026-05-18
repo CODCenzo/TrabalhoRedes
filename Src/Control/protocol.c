@@ -1,13 +1,9 @@
 #include "../../Headers/protocol.h"
 #include "../../Headers/kermit.h"
 
-#define TAM_MAX_DADOS 31
-
 // Tipo que sinaliza o fim da sequencia de envio
 // Os campo dados de uma mensagem deste tipo contém o final do arquivo e pode ter um
 // tamanho de 1 a 31
-#define FINAL_TYPE 16
-#define DEFAULT_CRC 1
 
 int wait_response (int socket, uint8_t msgSequence) {
 
@@ -21,27 +17,40 @@ int wait_response (int socket, uint8_t msgSequence) {
   }
 
   struct kermit *parsedPacket = parsing_kermit(bufferDeCaptura, tamanhoCapturado);
-  // printf("Tamanho capturado: %d\n");
 
-  // Recebemos a mensagem na sequencia errada, enviar NACK do msgSequence
-  if (parsedPacket->seq != msgSequence || parsedPacket->type == NACK_TYPE) {
-    printf("NACK SEQUENCE %d\n", msgSequence);
+  if (parsedPacket != NULL) {
+    // Recebemos um nack da sequencia certa
+    if (parsedPacket->seq != msgSequence || parsedPacket->type == NACK_TYPE) {
+
+      if (parsedPacket->seq != msgSequence) {
+        printf("RECEBEMOS UM NACK DA SEQUENCIA ERRADA\n");
+      }
+      else {
+        printf("NACK SEQ: %d, ESPECTED ACK %d\n", parsedPacket->seq, msgSequence);
+      }
+
+      if (parsedPacket->dados != NULL) {free(parsedPacket->dados);}
+      free(parsedPacket);
+
+      return NACK_TYPE;
+    }
+
+    if (parsedPacket->type == ACK_TYPE) {
+      printf("ACK SEQUENCE %d, EXPECTED %d \n", parsedPacket->seq, msgSequence);
+
+      if (parsedPacket->dados != NULL) {free(parsedPacket->dados);}
+      free(parsedPacket);
+
+      return ACK_TYPE;
+    }
+
     if (parsedPacket->dados != NULL) {free(parsedPacket->dados);}
     free(parsedPacket);
-    return NACK_TYPE;
+
   }
 
-  if (parsedPacket->type == ACK_TYPE) {
-    printf("ACK SEQUENCE %d\n", msgSequence);
-    if (parsedPacket->dados != NULL) {free(parsedPacket->dados);}
-    free(parsedPacket);
-    return ACK_TYPE;
-  }
+  printf("NAO RECEBEMOS NENHUMA RESPOSTA\n");
 
-  if (parsedPacket->dados != NULL) {free(parsedPacket->dados);}
-  free(parsedPacket);
-
-  printf("WAITING RESPONSE ERROR\n");
   return -1;
 }
 
@@ -77,9 +86,9 @@ int send_file (int socket, const char *filepath, int fileType) {
   msgSequence = 0;
 
   do {
-    bytesLidos = fread(buffer, 1, TAM_MAX_DADOS, f);
+    bytesLidos = fread(buffer, 1, MAX_DADOS, f);
 
-    if (bytesLidos < TAM_MAX_DADOS) {
+    if (bytesLidos < MAX_DADOS) {
       typeAux = FINAL_TYPE;
     }
 
@@ -97,15 +106,16 @@ int send_file (int socket, const char *filepath, int fileType) {
 
     if (tentativas >= MAX_TENTATIVAS_ENVIO) {
       perror("ERRO MAXIMO DE TENTATIVAS\n");
+      fclose(f);
       return -1;
     }
 
-    printf("PACOTE %d ENVIADO COM SUCESSO, ACK RECEBIDO _send_file\n", msgSequence);
+    printf("PACOTE %d ENVIADO COM SUCESSO, ACK RECEBIDO send_file\n", msgSequence);
+    printf("----------------------------------------\n");
 
     msgSequence++;
     // Reinicia a sequencia de envio
     if (msgSequence == 64) {msgSequence = 0;}
-    printf("----------------------------------------\n");
     
   } while (typeAux != FINAL_TYPE);
 
@@ -163,14 +173,20 @@ int receive_file (int socket) {
 
     // O pacote chegou na ordem errada, enviar NACK
     if (counter != parsedPacket->seq) {
-      printf("NACK COUNTER %d\n", counter);
-      sendMsg(socket, 0, counter, NACK_TYPE, NULL, DEFAULT_CRC);
+      // Se o pacote recebido é o imediatamente anterior (ajustado pelo módulo 64)
+      if (parsedPacket->seq == (counter - 1 + 64) % 64) {
+        printf("ACK PERDIDO DETECTADO. REENVIANDO ACK SEQ %d\n", parsedPacket->seq);
+        sendMsg(socket, 0, parsedPacket->seq, ACK_TYPE, NULL, DEFAULT_CRC);
+      } else {
+        printf("PACOTE FORA DE ORDEM, ENVIANDO NACK SEQ %d\n", counter);
+        sendMsg(socket, 0, counter, NACK_TYPE, NULL, DEFAULT_CRC);
+      }
     } else {
 
       // Envia o ACK do pacote
       sendMsg(socket, 0, counter, ACK_TYPE, NULL, DEFAULT_CRC);
       printf("PACOTE NUMERO %d CAPTURADO\n", parsedPacket->seq);
-      printf("ACK COUNTER %d\n", counter);
+      printf("SENDIGIN ACK SEQ %d\n", counter);
 
       // Escreve o conteúdo no arquivo de saída
       fwrite(parsedPacket->dados, 1, parsedPacket->tamDados, f);
