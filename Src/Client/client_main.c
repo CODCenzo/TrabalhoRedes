@@ -21,7 +21,7 @@ int main(int argc, char *argv[]) {
 
 	int socket = cria_raw_socket(argv[1]);
   
-  send_file(socket, "../../Files/msg.txt", 5);
+  send_file(socket, "../../Files/stevejobs.txt", 5);
 
   return 0;
 }
