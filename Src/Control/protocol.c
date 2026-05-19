@@ -1,10 +1,6 @@
 #include "../../Headers/protocol.h"
 #include "../../Headers/kermit.h"
 
-// Tipo que sinaliza o fim da sequencia de envio
-// Os campo dados de uma mensagem deste tipo contém o final do arquivo e pode ter um
-// tamanho de 1 a 31
-
 int wait_response (int socket, uint8_t msgSequence) {
 
   unsigned char bufferDeCaptura[MAX_FRAME_SIZE];
@@ -12,21 +8,22 @@ int wait_response (int socket, uint8_t msgSequence) {
 
   // TIMEOUT
   if (tamanhoCapturado == -1) {
-    printf("TIMEOUT SEQUENCE %d\n", msgSequence);
+    printf("WAITING RESPONSE, TIMEOUT MSG SEQUENCE %d\n", msgSequence);
     return 2;
   }
 
   struct kermit *parsedPacket = parsing_kermit(bufferDeCaptura, tamanhoCapturado);
 
   if (parsedPacket != NULL) {
-    // Recebemos um nack da sequencia certa
-    if (parsedPacket->seq != msgSequence || parsedPacket->type == NACK_TYPE) {
 
-      if (parsedPacket->seq != msgSequence) {
-        printf("RECEBEMOS UM NACK DA SEQUENCIA ERRADA\n");
+    // Recebemos o retorno da sequencia errada
+    if (parsedPacket->seq != msgSequence) {
+
+      if (parsedPacket->type == NACK_TYPE) {
+        printf("NACK SEQ %x, EXPECTED SEQ %x\n",parsedPacket->seq, msgSequence);
       }
-      else {
-        printf("NACK SEQ: %d, ESPECTED ACK %d\n", parsedPacket->seq, msgSequence);
+      else if (parsedPacket->type == ACK_TYPE){
+        printf("ACK SEQ: %d, EXPECTED ACK %d\n", parsedPacket->seq, msgSequence);
       }
 
       if (parsedPacket->dados != NULL) {free(parsedPacket->dados);}
@@ -35,8 +32,9 @@ int wait_response (int socket, uint8_t msgSequence) {
       return NACK_TYPE;
     }
 
+    // Recebemos um ACK coomo esperado
     if (parsedPacket->type == ACK_TYPE) {
-      printf("ACK SEQUENCE %d, EXPECTED %d \n", parsedPacket->seq, msgSequence);
+      printf("ACK SEQUENCE %d RECEIVED \n", parsedPacket->seq);
 
       if (parsedPacket->dados != NULL) {free(parsedPacket->dados);}
       free(parsedPacket);
@@ -46,7 +44,6 @@ int wait_response (int socket, uint8_t msgSequence) {
 
     if (parsedPacket->dados != NULL) {free(parsedPacket->dados);}
     free(parsedPacket);
-
   }
 
   printf("NAO RECEBEMOS NENHUMA RESPOSTA\n");
@@ -94,7 +91,7 @@ int send_file (int socket, const char *filepath, int fileType) {
 
     tentativas = 0;
     do {
-      if (sendMsg(socket, bytesLidos, msgSequence, typeAux, buffer, DEFAULT_CRC) == -1) {
+      if (sendMsg(socket, bytesLidos, msgSequence, typeAux, buffer) == -1) {
         perror("ERRO send_file\n");
         return -1;
       }
@@ -105,13 +102,10 @@ int send_file (int socket, const char *filepath, int fileType) {
     } while (tentativas < MAX_TENTATIVAS_ENVIO);
 
     if (tentativas >= MAX_TENTATIVAS_ENVIO) {
-      perror("ERRO MAXIMO DE TENTATIVAS\n");
+      printf("ERRO MAXIMO DE TENTATIVAS PARA O ENVIO DO PACOTE SEQ: %x\n", msgSequence);
       fclose(f);
       return -1;
     }
-
-    printf("PACOTE %d ENVIADO COM SUCESSO, ACK RECEBIDO send_file\n", msgSequence);
-    printf("----------------------------------------\n");
 
     msgSequence++;
     // Reinicia a sequencia de envio
@@ -154,7 +148,7 @@ int receive_file (int socket) {
     tamanhoCapturado = recebe_mensagem(socket, 300, bufferDeCaptura, MAX_FRAME_SIZE);
     // TIMEOUT
     if (tamanhoCapturado == -1) {
-      printf("TIMEOUT SEQUENCE %d\n", counter);
+      printf("TIMEOUT RECEIVING SEQUENCE %d\n", counter);
       timeoutCounter++;
       if (timeoutCounter >= MAX_TIMEOUTS_SEGUIDOS) {
         perror("MÁXIMO DE TIMEOUTS\n");
@@ -176,17 +170,17 @@ int receive_file (int socket) {
       // Se o pacote recebido é o imediatamente anterior (ajustado pelo módulo 64)
       if (parsedPacket->seq == (counter - 1 + 64) % 64) {
         printf("ACK PERDIDO DETECTADO. REENVIANDO ACK SEQ %d\n", parsedPacket->seq);
-        sendMsg(socket, 0, parsedPacket->seq, ACK_TYPE, NULL, DEFAULT_CRC);
+        sendMsg(socket, 0, parsedPacket->seq, ACK_TYPE, NULL);
       } else {
         printf("PACOTE FORA DE ORDEM, ENVIANDO NACK SEQ %d\n", counter);
-        sendMsg(socket, 0, counter, NACK_TYPE, NULL, DEFAULT_CRC);
+        sendMsg(socket, 0, counter, NACK_TYPE, NULL);
       }
     } else {
 
       // Envia o ACK do pacote
-      sendMsg(socket, 0, counter, ACK_TYPE, NULL, DEFAULT_CRC);
+      sendMsg(socket, 0, counter, ACK_TYPE, NULL);
       printf("PACOTE NUMERO %d CAPTURADO\n", parsedPacket->seq);
-      printf("SENDIGIN ACK SEQ %d\n", counter);
+      printf("SENDIGING ACK SEQ %d\n", counter);
 
       // Escreve o conteúdo no arquivo de saída
       fwrite(parsedPacket->dados, 1, parsedPacket->tamDados, f);

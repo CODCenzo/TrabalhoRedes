@@ -41,18 +41,21 @@ void print_kermit(struct kermit *k);
 
 void imprimeFrame (unsigned char *bufferFrame, int tamFrameCompleto);
 
-// Aloca e preenche uma estrutura kermit com os dados do buffer 
-struct kermit *parsing_kermit(unsigned char *bufferCapturado, int tamCaptura);
+// Utiliza o PG=0x07 para calcular o CRC do buffer
+uint8_t calculaCRC8(const unsigned char *data, int tamData);
 
 // Constrói e preenche o frame. O tamanhoFrame min é 4 sempre e o máximo é 35
 // Falta implementar CRC
 unsigned char* buildFrame(unsigned char *bufferDados, uint8_t tamDados, uint8_t seq,
-                          uint8_t type, uint8_t crc);
+                          uint8_t type);
+
+// Aloca e preenche uma estrutura kermit com os dados do buffer 
+struct kermit *parsing_kermit(unsigned char *bufferCapturado, int tamCaptura);
 
 // Contrói o frame e envia pelo socket. Não trata de ACK ou NACK
 // Não é possível enviar mensagens menores que 14
 int sendMsg (int socket, uint8_t tamDados, uint8_t sequencia, uint8_t tipo, 
-            unsigned char *dadosMsg, uint8_t crc);
+            unsigned char *dadosMsg);
 
 // Retorna o tempo do sistema em milissegundos
 long long timestamp();
@@ -62,6 +65,7 @@ int protocolo_e_valido(unsigned char* buffer, int tamanho_buffer);
 
 // Loop que lê o socket em busca de pacotes válidos
 // retorna -1 se deu timeout, ou quantidade de bytes lidos
-int recebe_mensagem(int soquete, int timeoutMillis, unsigned char* buffer, int tamanho_buffer);
+int recebe_mensagem(int soquete, int timeoutMillis, unsigned char* buffer, 
+                    int tamanho_buffer);
 
 #endif

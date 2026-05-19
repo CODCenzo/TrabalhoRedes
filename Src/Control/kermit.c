@@ -15,75 +15,41 @@ void print_kermit(struct kermit *k) {
 
 // Imprime o frame byte a byte
 void imprimeFrame (unsigned char *bufferFrame, int tamFrameCompleto) {
-	printf("IMPRIMINDO FRAME ENVIADO: \n");
+	printf("IMPRIMINDO FRAME COMPLETO: \n");
 	for (int i = 0; i < tamFrameCompleto; i ++) {
 		printf("%02x ", bufferFrame[i]);
 	}
 	printf("\n");
 }
 
-// Aloca e preenche uma estrutura kermit com os dados do buffer 
-// Melhorar lógica usando máscaras
-struct kermit *parsing_kermit(unsigned char *bufferCapturado, int tamCaptura) {
 
-  if (tamCaptura < MIN_FRAME_SIZE) {
-    perror("ERRO PARSING KERMIT\n");
-    return NULL;
-  }
+uint8_t calculaCRC8(const unsigned char *data, int tamData) {
+	// O parametro data representa TAM/SEQ/TIPO/DADOS
 
-  struct kermit *k = malloc(sizeof(struct kermit));
-	if (!k) {return NULL;}
+	uint8_t crc = 0x00;
 
-	uint8_t aux_seq ;
+	for (int i = 0; i < tamData; i++) {
+		crc ^= data[i]; // Alinha o byte para iniciar a divisão
 
-	// Separa o tamanhoMsg
-  k->tamDados = bufferCapturado[1] ;
-	k->tamDados = k->tamDados >> 3 ;
-
-	// Separa os MSB do seq
-  aux_seq = bufferCapturado[1];
-	//zera os 5 bits mais significativos
-  for (int i = 3; i < 8; i++)
-	  aux_seq &= ~(1 << i) ; 
-  aux_seq = aux_seq << 3 ;
-
-	// Separa os LSB do seq
-  k->seq = bufferCapturado[2] ;
-  k->seq = k->seq >> 5 ;
-	// Separa ambas as partes do campo sequência
-	k->seq += aux_seq ;
-
-	// Separada o campo type
-	k->type = bufferCapturado[2] ;
-  for (int i = 5; i < 8; i++)
-	  k->type &= ~(1 << i) ; 
-	
-
-  if (k->tamDados > 0) {
-		// Copia os dados do buffer para a struct
-		k->dados = malloc(k->tamDados);
-		if (!k->dados) {
-			free(k);
-			return NULL;
+		for (int j = 0; j < 8; j++) {
+			if (crc & 0x80) { // 0x80 = 1000 0000. Isola o bit mais a esquerda fazendo AND bit a bit
+				crc = (crc << 1) ^ 0x07; // Aplica o polinômio se o MSB for 1
+			} else {
+				crc <<= 1;
+			}
 		}
-		memcpy(k->dados, &bufferCapturado[3], k->tamDados);
-  } else {
-		k->dados = NULL;
 	}
 
-	// Separa o CRC
-  k->crc = bufferCapturado[3 + k->tamDados] ;
-
-	return k;
+	return crc;
 }
 
+
 // Constrói e preenche o frame. O tamanhoFrame min é 4 sempre e o máximo é 35
-// Falta implementar CRC
 unsigned char* buildFrame(unsigned char *bufferDados, uint8_t tamDados, uint8_t seq,
-                 uint8_t type, uint8_t crc) {
-
+													uint8_t type) {
+		
 	//Verifica os parâmetros da função
-
+		
 	if (tamDados > 31) {
 		perror("Erro buildFrame, o tamanho da mensagem é maior que 31\n");
 		return NULL;
@@ -107,54 +73,112 @@ unsigned char* buildFrame(unsigned char *bufferDados, uint8_t tamDados, uint8_t 
 		perror("Erro buildFrame, erro ao alocar frame\n");
 		return NULL;
 	}
-
+	
 	// Byte 0: Marcador de inicio(8 bits), 01111110 ou 7e
 	memset(bufferFrame, 0x7e, 1) ;
-
+	
 	// Byte 1: TAM(5 bits MSB) | SEQ Alta(3 bits LSB)
   bufferFrame[1] = ((tamDados & 0x1F) << 3) | ((seq >> 3) & 0x07);
-
+	
   // Byte 2: SEQ Baixa(3 bits MSB) | TYPE(5 bits LSB)
   bufferFrame[2] = ((seq & 0x07) << 5) | (type & 0x1F);
-
-	// Campo Dados
+	
 	if (bufferDados != NULL && tamDados > 0) {
 		memcpy(bufferFrame + 3, bufferDados ,tamDados);
 	} 
   
   memset(bufferFrame + 4 + tamDados, 0, tam_padding);
 
+	// Calcula o CRC dos campos: TAM/SEQ/TIPO/DADOS
+	uint8_t crc = calculaCRC8(bufferFrame + 1, 2 + tamDados);
+	
 	// Campo CRC (8bits)
 	bufferFrame[3 + tamDados] = crc;
-
+	
   return bufferFrame;
 }
 
+// Aloca e preenche uma estrutura kermit com os dados do buffer 
+// Melhorar lógica usando máscaras
+struct kermit *parsing_kermit(unsigned char *bufferCapturado, int tamCaptura) {
+
+	if (tamCaptura < MIN_FRAME_SIZE) {
+		perror("Erro parsing_kermit, o tamanho captura é menor que 14\n");
+		return NULL;
+	}
+
+	struct kermit *k = malloc(sizeof(struct kermit));
+	if (!k) {return NULL;}
+
+	uint8_t aux_seq ;
+
+	// Separa o tamanhoMsg
+	k->tamDados = bufferCapturado[1] ;
+	k->tamDados = k->tamDados >> 3 ;
+
+	// Separa os MSB do seq
+	aux_seq = bufferCapturado[1];
+	//zera os 5 bits mais significativos
+	for (int i = 3; i < 8; i++)
+		aux_seq &= ~(1 << i) ; 
+	aux_seq = aux_seq << 3 ;
+
+	// Separa os LSB do seq
+	k->seq = bufferCapturado[2] ;
+	k->seq = k->seq >> 5 ;
+	// Separa ambas as partes do campo sequência
+	k->seq += aux_seq ;
+
+	// Separa o campo type
+	k->type = bufferCapturado[2] ;
+	for (int i = 5; i < 8; i++)
+		k->type &= ~(1 << i) ; 
+	
+	if (k->tamDados > 0) {
+		// Copia os dados do buffer para a struct
+		k->dados = malloc(k->tamDados);
+		if (!k->dados) {
+			free(k);
+			return NULL;
+		}
+		memcpy(k->dados, &bufferCapturado[3], k->tamDados);
+	} else {
+		k->dados = NULL;
+	}
+
+	// Separa o CRC
+	k->crc = bufferCapturado[3 + k->tamDados] ;
+
+	return k;
+}
+
 // Contrói o frame e envia pelo socket. Não trata de ACK ou NACK
-int sendMsg (int socket, uint8_t tamDados, uint8_t sequencia, uint8_t tipo, unsigned char *dadosMsg, uint8_t crc) {
+int sendMsg (int socket, uint8_t tamDados, uint8_t sequencia, uint8_t tipo, unsigned char *dadosMsg) {
 	
 	// Constrói o frame para o envio
-	unsigned char *frameCompleto = buildFrame(dadosMsg, tamDados, sequencia, tipo, crc);
+	unsigned char *frameCompleto = buildFrame(dadosMsg, tamDados, sequencia, tipo);
 	if (!frameCompleto) {
 		perror("ERRO AO CRIAR FRAME\n");
 		return -1;
 	}
 
 	int padding = 0;
-	if (tamDados < 10) {
-		padding = 10;
-	}
-	unsigned int tamFrameCompleto = tamDados + 4 + padding; 
-	// printf("FRAME CONSTRUÍDO COM SUCESSO\n");
-	// imprimeFrame(frameCompleto, tamFrameCompleto);
-	// printf("TAMANHO FRAME: %d\n", tamFrameCompleto);
+	if (tamDados < 10) { padding = 10;}
+	unsigned int tamFrameCompleto = tamDados + 4 + padding;
+
+	printf("-------------------------------\n");
+	printf("ENVIANDO FRAME TAMDADOS: %x TAMFRAME: %d SEQ: %x TIPO: %x\n", tamDados, 
+				tamFrameCompleto, sequencia, tipo);
+	imprimeFrame(frameCompleto, tamFrameCompleto);
 
 	if (send(socket, frameCompleto, tamFrameCompleto, 0) == -1) {
 		perror("ERRO AO ENVIAR FRAME\n");
 		return -1;
 	}
 
-	printf("FRAME ENVIADO\n");
+	printf("FRAME ENVIADO COM SUCESSO\n");
+	printf("-------------------------------\n");
+	
 	free(frameCompleto);
 
   return 1;
@@ -173,9 +197,20 @@ int protocolo_e_valido(unsigned char* buffer, int tamanho_buffer) {
 	
 	if (tamanho_buffer < MIN_FRAME_SIZE) { 
 		return 0; }
-	// insira a sua validação de protocolo aqui
-	// Colocar função que calcula CRC aqui
+
 	if (buffer[0] == 0x7e) {
+
+		uint8_t tamDados = buffer[1] >> 3;
+		if (tamanho_buffer < (tamDados + 4)) {return 0;}
+
+		uint8_t crcRecebido = buffer[tamDados + 3];
+		uint8_t crcCalculado = calculaCRC8(buffer + 1, tamDados + 2);
+
+		if (crcRecebido != crcCalculado) { 
+			printf("PACOTE CORROMPIDO CRC RECEBIDO: %x | CRC CALCULADO %x", crcRecebido, crcCalculado);
+			return 0;
+		}
+
 		return 1;
 	}
 
