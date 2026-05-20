@@ -323,10 +323,10 @@ bool visible_to_pacman(Game *g, int x, int y) {
 void draw_tile(Game *g, int x, int y, int screen_x, int screen_y) {
   char tile = g->maze[y][x];
 
- /*if (!visible_to_pacman(g, x, y)) {
+ if (!visible_to_pacman(g, x, y)) {
     mvaddch(screen_y, screen_x, ' ');
     return;
-  }*/
+  }
 
   if (tile == 'X') {
     attron(COLOR_PAIR(6) | A_BOLD);
@@ -644,7 +644,7 @@ Game *init_game(){
 
   g->score = 0;
   g->moves_count = 0;
-  g->vision_radius = 100; 
+  g->vision_radius = 1; 
   g->prizes_collected = 0;
   g->green_prefers_left = 1;
 
