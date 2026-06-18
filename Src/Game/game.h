@@ -114,6 +114,8 @@ void draw_tile(Game *g, int x, int y, int screen_x, int screen_y) ;
 
 void draw_game(Game *g) ;
 
+void build_client_matrix(Game *g, char out[MAZE_SIZE][MAZE_SIZE + 1]) ;
+
 int try_move(Game *g, Actor *b, int dx, int dy) ;
 
 int direction_from_key(int ch, int *dx, int *dy) ;
