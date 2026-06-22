@@ -45,8 +45,4 @@ typedef struct {
 // Recebe uma mensagem da camada de aplicação e identifica o que fazer com ela
 recv_result_t receive_game_message(int socket, unsigned char *out_buf, size_t buf_size);
 
-// Envia um buffer arbitrário já em memória, em múltiplos pacotes se necessário
-// Útil para enviar o mapa e mensagens de controle sem escrever em arquivo temporário
-int send_buffer(int socket, const unsigned char *data, size_t size, uint8_t msgType);
-
 #endif

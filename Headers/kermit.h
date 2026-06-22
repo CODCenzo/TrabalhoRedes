@@ -49,6 +49,8 @@ struct kermit {
 
 void print_kermit(struct kermit *k);
 
+void kermit_free(struct kermit *k);
+
 void imprimeFrame (unsigned char *bufferFrame, int tamFrameCompleto);
 
 // Utiliza o PG=0x07 para calcular o CRC do buffer.

@@ -13,7 +13,10 @@ int main(int argc, char *argv[]) {
 
 	int socket = cria_raw_socket(argv[1]);
 
-  receive_file(socket);
+	while (1) {
+		receive_file(socket, "saidaTeste.txt");
+	}
+
 
   return 0;
 
