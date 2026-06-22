@@ -21,7 +21,20 @@ int main(int argc, char *argv[]) {
 
 	int socket = cria_raw_socket(argv[1]);
   
-  send_file(socket, "../../Files/stevejobs.txt", 5);
+  // send_file(socket, "../../Files/stevejobs.txt", 5);
+
+	// Loop principal do cliente
+	while (1) {
+			send_movimento(socket, ler_input_usuario());
+
+			switch (receive_game_message(socket, buf, sizeof(buf))) {
+					case RECV_MAP:      renderizar_mapa(buf);   break;
+					case RECV_FILE:     exibir_arquivo(buf);    break;
+					case RECV_GAMEOVER: mostrar_game_over();    return;
+					case RECV_WIN:      mostrar_vitoria();      return;
+					case RECV_ERROR:    /* tratar */            break;
+			}
+	}
 
   return 0;
 }

@@ -11,10 +11,14 @@
 #include <unistd.h>
 #include <string.h>
 
-// 4 bytes campos + 31 bytes de dados
-#define MAX_FRAME_SIZE 35
-#define MIN_FRAME_SIZE 14
-#define MAX_TENTATIVAS_ENVIO 100
+#define MI 0x7e // Marcador de início
+#define SEQ_MODULO 64 // Limite da sequencia de mensagens
+
+#define MAX_FRAME_SIZE 35 // 4 bytes campos + 31 bytes de dados
+#define MIN_FRAME_SIZE 14 // 4 bytes campos + 10 bytes de dados ou padding
+
+#define MAX_TENTATIVAS_ENVIO 25
+
 #define MAX_DADOS 31
 #define MIN_DADOS 10
 
@@ -22,6 +26,12 @@
 #define NACK_TYPE 1
 #define DATA_TYPE 4
 #define FINAL_TYPE 16
+
+#define MOVE_UP_TYPE 12
+#define MOVE_DOWN_TYPE 13
+#define MOVE_RIGHT_TYPE 10
+#define MOVE_LEFT_TYPE 11
+
 
 #define DEFAULT_CRC 1
 
@@ -41,26 +51,28 @@ void print_kermit(struct kermit *k);
 
 void imprimeFrame (unsigned char *bufferFrame, int tamFrameCompleto);
 
-// Utiliza o PG=0x07 para calcular o CRC do buffer
+// Utiliza o PG=0x07 para calcular o CRC do buffer.
 uint8_t calculaCRC8(const unsigned char *data, int tamData);
 
-// Constrói e preenche o frame. O tamanhoFrame min é 4 sempre e o máximo é 35
-// Falta implementar CRC
+// Aloca e preenche o frame com seguindo o protocolo.
+// Retorna char*, e NULL em caso de erro
 unsigned char* buildFrame(unsigned char *bufferDados, uint8_t tamDados, uint8_t seq,
                           uint8_t type);
 
-// Aloca e preenche uma estrutura kermit com os dados do buffer 
+// Aloca e preenche uma estrutura kermit com os dados do buffer capturado.
+// Retorna kermit*, e NULL em caso de erro
 struct kermit *parsing_kermit(unsigned char *bufferCapturado, int tamCaptura);
 
 // Contrói o frame e envia pelo socket. Não trata de ACK ou NACK
-// Não é possível enviar mensagens menores que 14
+// Retorna 1, e em caso de erro -1
 int sendMsg (int socket, uint8_t tamDados, uint8_t sequencia, uint8_t tipo, 
             unsigned char *dadosMsg);
 
 // Retorna o tempo do sistema em milissegundos
 long long timestamp();
 
-// Verifica tamanho do buffer e marcador inicíal
+// Verifica a validade do pacote capturado a partir do MI e CRC.
+// Retorna 1, e 0 caso seja inválido
 int protocolo_e_valido(unsigned char* buffer, int tamanho_buffer);
 
 // Loop que lê o socket em busca de pacotes válidos

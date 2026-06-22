@@ -22,9 +22,19 @@ void imprimeFrame (unsigned char *bufferFrame, int tamFrameCompleto) {
 	printf("\n");
 }
 
+void kermit_free(struct kermit *k) {
+	if (!k) return;
+	if (k->dados != NULL) {
+		free(k->dados);
+		k->dados = NULL;
+	}
+	free(k);
+	k = NULL;
+}
 
+// Calcula o CRC dos campos TAM/SEQ/TIPO/DADOS
+// Utiliza PG=0x07
 uint8_t calculaCRC8(const unsigned char *data, int tamData) {
-	// O parametro data representa TAM/SEQ/TIPO/DADOS
 
 	uint8_t crc = 0x00;
 
@@ -44,11 +54,13 @@ uint8_t calculaCRC8(const unsigned char *data, int tamData) {
 }
 
 
-// Constrói e preenche o frame. O tamanhoFrame min é 4 sempre e o máximo é 35
+// Aloca e preenche o frame com seguindo o protocolo.
+// Caso o tamDados seja < 10 colocamos padding no final do frame para que o tamanho mínimo
+// do frame seja 14 e máximo seja 35.
+// Retorna um ponteiro para um buffer contendo o frame.
+// Em caso de erro retorna NULL.
 unsigned char* buildFrame(unsigned char *bufferDados, uint8_t tamDados, uint8_t seq,
 													uint8_t type) {
-		
-	//Verifica os parâmetros da função
 		
 	if (tamDados > 31) {
 		perror("Erro buildFrame, o tamanho da mensagem é maior que 31\n");
@@ -75,7 +87,7 @@ unsigned char* buildFrame(unsigned char *bufferDados, uint8_t tamDados, uint8_t 
 	}
 	
 	// Byte 0: Marcador de inicio(8 bits), 01111110 ou 7e
-	memset(bufferFrame, 0x7e, 1) ;
+	memset(bufferFrame, MI, 1) ;
 	
 	// Byte 1: TAM(5 bits MSB) | SEQ Alta(3 bits LSB)
   bufferFrame[1] = ((tamDados & 0x1F) << 3) | ((seq >> 3) & 0x07);
@@ -87,6 +99,7 @@ unsigned char* buildFrame(unsigned char *bufferDados, uint8_t tamDados, uint8_t 
 		memcpy(bufferFrame + 3, bufferDados ,tamDados);
 	} 
   
+	//Adiciona padding de zeros ao final do frame
   memset(bufferFrame + 4 + tamDados, 0, tam_padding);
 
 	// Calcula o CRC dos campos: TAM/SEQ/TIPO/DADOS
@@ -98,8 +111,9 @@ unsigned char* buildFrame(unsigned char *bufferDados, uint8_t tamDados, uint8_t 
   return bufferFrame;
 }
 
-// Aloca e preenche uma estrutura kermit com os dados do buffer 
-// Melhorar lógica usando máscaras
+// Aloca e preenche uma estrutura kermit com os dados do buffer capturado 
+// Ignora o padding.
+// Retorna uma estrutura kermit e NULL em caso de erro
 struct kermit *parsing_kermit(unsigned char *bufferCapturado, int tamCaptura) {
 
 	if (tamCaptura < MIN_FRAME_SIZE) {
@@ -110,29 +124,13 @@ struct kermit *parsing_kermit(unsigned char *bufferCapturado, int tamCaptura) {
 	struct kermit *k = malloc(sizeof(struct kermit));
 	if (!k) {return NULL;}
 
-	uint8_t aux_seq ;
-
 	// Separa o tamanhoMsg
-	k->tamDados = bufferCapturado[1] ;
-	k->tamDados = k->tamDados >> 3 ;
+	k->tamDados = (bufferCapturado[1] >> 3) & 0x1F;
 
-	// Separa os MSB do seq
-	aux_seq = bufferCapturado[1];
-	//zera os 5 bits mais significativos
-	for (int i = 3; i < 8; i++)
-		aux_seq &= ~(1 << i) ; 
-	aux_seq = aux_seq << 3 ;
-
-	// Separa os LSB do seq
-	k->seq = bufferCapturado[2] ;
-	k->seq = k->seq >> 5 ;
-	// Separa ambas as partes do campo sequência
-	k->seq += aux_seq ;
+	k->seq = ((bufferCapturado[1] & 0x07) << 3) | (bufferCapturado[2] >> 5);
 
 	// Separa o campo type
-	k->type = bufferCapturado[2] ;
-	for (int i = 5; i < 8; i++)
-		k->type &= ~(1 << i) ; 
+	k->type = bufferCapturado[2] & 0x1F;
 	
 	if (k->tamDados > 0) {
 		// Copia os dados do buffer para a struct
@@ -152,7 +150,8 @@ struct kermit *parsing_kermit(unsigned char *bufferCapturado, int tamCaptura) {
 	return k;
 }
 
-// Contrói o frame e envia pelo socket. Não trata de ACK ou NACK
+// Contrói o frame e envia o frame pelo socket. Não trata de ACK ou NACK
+// Retorna 1 e em caso de erro -1
 int sendMsg (int socket, uint8_t tamDados, uint8_t sequencia, uint8_t tipo, unsigned char *dadosMsg) {
 	
 	// Constrói o frame para o envio
@@ -162,6 +161,7 @@ int sendMsg (int socket, uint8_t tamDados, uint8_t sequencia, uint8_t tipo, unsi
 		return -1;
 	}
 
+	// Verifica se houve padding na contrução do frame
 	int padding = 0;
 	if (tamDados < 10) { padding = 10;}
 	unsigned int tamFrameCompleto = tamDados + 4 + padding;
@@ -169,6 +169,7 @@ int sendMsg (int socket, uint8_t tamDados, uint8_t sequencia, uint8_t tipo, unsi
 	printf("-------------------------------\n");
 	printf("ENVIANDO FRAME TAMDADOS: %x TAMFRAME: %d SEQ: %x TIPO: %x\n", tamDados, 
 				tamFrameCompleto, sequencia, tipo);
+
 	imprimeFrame(frameCompleto, tamFrameCompleto);
 
 	if (send(socket, frameCompleto, tamFrameCompleto, 0) == -1) {
@@ -192,13 +193,15 @@ long long timestamp() {
 	return tp.tv_sec*1000 + tp.tv_usec/1000;
 }
  
-//Retorna 0 caso não encontre o marcador inícial do nosso frame
+// Verifica a validade do pacote usando marcador inicial e CRC.
+// Retorna 1 e 0 em caso de pacote inválido
 int protocolo_e_valido(unsigned char* buffer, int tamanho_buffer) {
 	
 	if (tamanho_buffer < MIN_FRAME_SIZE) { 
-		return 0; }
+		return 0; 
+	}
 
-	if (buffer[0] == 0x7e) {
+	if (buffer[0] == MI) { // Verifica marcador inícial
 
 		uint8_t tamDados = buffer[1] >> 3;
 		if (tamanho_buffer < (tamDados + 4)) {return 0;}
@@ -207,7 +210,7 @@ int protocolo_e_valido(unsigned char* buffer, int tamanho_buffer) {
 		uint8_t crcCalculado = calculaCRC8(buffer + 1, tamDados + 2);
 
 		if (crcRecebido != crcCalculado) { 
-			printf("PACOTE CORROMPIDO CRC RECEBIDO: %x | CRC CALCULADO %x", crcRecebido, crcCalculado);
+			printf("PACOTE CORROMPIDO | CRC RECEBIDO: %x | CRC CALCULADO %x", crcRecebido, crcCalculado);
 			return 0;
 		}
 
@@ -217,7 +220,8 @@ int protocolo_e_valido(unsigned char* buffer, int tamanho_buffer) {
 	return 0;
 }
  
-// retorna -1 se deu timeout, ou quantidade de bytes lidos
+// Loop de espera de mensagem.
+// Retorna -1 se deu timeout (pacote inválido ou não recebeu), ou quantidade de bytes lidos.
 int recebe_mensagem(int soquete, int timeoutMillis, unsigned char* buffer, int tamanho_buffer) {
 	long long comeco = timestamp();
 
@@ -231,7 +235,7 @@ int recebe_mensagem(int soquete, int timeoutMillis, unsigned char* buffer, int t
 	int bytes_lidos;
 	do {
 		bytes_lidos = recv(soquete, buffer, tamanho_buffer, 0);
-		if (protocolo_e_valido(buffer, bytes_lidos)) { return bytes_lidos; }
+		if (bytes_lidos > 0 && protocolo_e_valido(buffer, bytes_lidos)) { return bytes_lidos; }
 	} while (timestamp() - comeco <= timeoutMillis);
 
 	return -1;

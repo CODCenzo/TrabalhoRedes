@@ -1,4 +1,12 @@
 TO DO LIST:
-- Validação CRC
-- Arrumar bugs
-- Implementar o PADDING(tanto no envio como na recepção) para mensagens com tamDados < 10
+
+High priority:
+- Bit stuffing
+- Lógica do cliente
+- Lógica do servidor
+
+Mid priority:
+- 
+
+Low priority:
+- Melhorar lógica de parsing_kermit (X)
