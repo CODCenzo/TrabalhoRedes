@@ -32,6 +32,80 @@ void kermit_free(struct kermit *k) {
 	k = NULL;
 }
 
+/*
+ * Aplica byte stuffing no buffer src, escrevendo o resultado em dst.
+ *
+ * Regra: após cada byte 0x88 ou 0x81, insere um byte 0xFF.
+ * O byte marcador de início (0x7E, sempre em src[0]) é copiado sem stuffing —
+ * ele nunca terá 0x88 ou 0x81, mas mais importante, o stuffing não deve
+ * alterar a posição do marcador que o receptor usa para identificar o frame.
+ *
+ * Retorna o tamanho do buffer após o stuffing.
+ * dst deve ter capacidade para até 2 * tamSrc bytes (pior caso: todos os bytes
+ * precisam de stuffing).
+ */
+static int stuffing(const unsigned char *src, int tamSrc,
+                    unsigned char *dst, int tamDst) {
+	int j = 0;
+
+	for (int i = 0; i < tamSrc; i++) {
+		if (j >= tamDst) {
+			fprintf(stderr, "STUFFING: buffer de destino cheio\n");
+			return -1;
+		}
+
+		dst[j++] = src[i];
+
+		/* Insere 0xFF após 0x88 ou 0x81, exceto no marcador inicial (i == 0) */
+		if (i > 0 && (src[i] == 0x88 || src[i] == 0x81)) {
+			if (j >= tamDst) {
+				fprintf(stderr, "STUFFING: buffer de destino cheio (escape)\n");
+				return -1;
+			}
+			dst[j++] = 0xFF;
+		}
+	}
+
+	return j;
+}					
+
+/*
+ * Remove os bytes de stuffing de src, escrevendo o resultado em dst.
+ *
+ * Regra: um byte 0xFF que segue imediatamente um 0x88 ou 0x81 é removido.
+ * O 0xFF só é escape se vier imediatamente após 0x88 ou 0x81 — caso contrário
+ * é dado legítimo e é copiado normalmente.
+ *
+ * Retorna o tamanho do buffer após o destuffing.
+ */
+static int destuffing(const unsigned char *src, int tamSrc,
+                      unsigned char *dst, int tamDst) {
+	int j = 0;
+	int skip_next = 0;  /* flag: próximo byte é escape, descartar */
+
+	for (int i = 0; i < tamSrc; i++) {
+		if (j >= tamDst) {
+			fprintf(stderr, "DESTUFFING: buffer de destino cheio\n");
+			return -1;
+		}
+
+		if (skip_next && src[i] == 0xFF) {
+			skip_next = 0;  /* descarta o 0xFF de escape */
+			continue;
+		}
+
+		skip_next = 0;
+		dst[j++] = src[i];
+
+		/* Próximo byte será escape se este for 0x88 ou 0x81 */
+		if (src[i] == 0x88 || src[i] == 0x81) {
+			skip_next = 1;
+			}
+	}
+
+	return j;
+}
+
 // Calcula o CRC dos campos TAM/SEQ/TIPO/DADOS
 // Utiliza PG=0x07
 uint8_t calculaCRC8(const unsigned char *data, int tamData) {
@@ -166,14 +240,33 @@ int sendMsg (int socket, uint8_t tamDados, uint8_t sequencia, uint8_t tipo, unsi
 	if (tamDados < 10) { padding = 10;}
 	unsigned int tamFrameCompleto = tamDados + 4 + padding;
 
+	// Adiciona o stuffing
+	int tamStuffMax = tamFrameCompleto * 2;
+	unsigned char *frameStuffed = malloc(tamStuffMax);
+	if (!frameStuffed) {
+		perror("ERRO AO ALOCAR BUFFER DE STUFFING\n");
+		free(frameCompleto);
+		return -1;
+	}
+
+	int tamStuffed = stuffing(frameCompleto, tamFrameCompleto,frameStuffed, tamStuffMax);
+	if (tamStuffed == -1) {
+		fprintf(stderr, "ERRO NO STUFFING\n");
+		free(frameCompleto);
+		free(frameStuffed);
+		return -1;
+	}
+
 	printf("-------------------------------\n");
-	printf("ENVIANDO FRAME TAMDADOS: %x TAMFRAME: %d SEQ: %x TIPO: %x\n", tamDados, 
-				tamFrameCompleto, sequencia, tipo);
+	printf("ENVIANDO FRAME TAM_ORIGINAL: %d TAM_STUFFED: %d SEQ: %x TIPO: %x\n",
+           tamFrameCompleto, tamStuffed, sequencia, tipo);
 
-	imprimeFrame(frameCompleto, tamFrameCompleto);
+	imprimeFrame(frameStuffed, tamStuffed);
 
-	if (send(socket, frameCompleto, tamFrameCompleto, 0) == -1) {
+	if (send(socket, frameStuffed, tamStuffed, 0) == -1) {
 		perror("ERRO AO ENVIAR FRAME\n");
+		free(frameCompleto);
+		free(frameStuffed);
 		return -1;
 	}
 
@@ -181,6 +274,7 @@ int sendMsg (int socket, uint8_t tamDados, uint8_t sequencia, uint8_t tipo, unsi
 	printf("-------------------------------\n");
 	
 	free(frameCompleto);
+	free(frameStuffed);
 
   return 1;
 }
@@ -232,10 +326,16 @@ int recebe_mensagem(int soquete, int timeoutMillis, unsigned char* buffer, int t
 
 	setsockopt(soquete, SOL_SOCKET, SO_RCVTIMEO, (char*) &timeout, sizeof(timeout));
 
+	unsigned char stuffedBuffer[MAX_FRAME_SIZE * 2];
 	int bytes_lidos;
+
 	do {
-		bytes_lidos = recv(soquete, buffer, tamanho_buffer, 0);
-		if (bytes_lidos > 0 && protocolo_e_valido(buffer, bytes_lidos)) { return bytes_lidos; }
+		bytes_lidos = recv(soquete, stuffedBuffer, sizeof(stuffedBuffer), 0);
+		if (bytes_lidos <= 0) {continue;}
+
+		int tamDestuffed = destuffing(stuffedBuffer, bytes_lidos, buffer, tamanho_buffer);
+
+		if (tamDestuffed > 0 && protocolo_e_valido(buffer, tamDestuffed)) { return tamDestuffed; }
 	} while (timestamp() - comeco <= timeoutMillis);
 
 	return -1;
