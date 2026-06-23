@@ -24,7 +24,7 @@
 #include "../../Headers/kermit.h"
 #include "../../Headers/protocol.h"
 #include "../../Headers/game_protocol.h"
-#include "../../Headers/game.h"
+#include "../../Src/Game/game.h"
 #include "../Game/aux_game.h"
 #include "../Game/draw.h"
 

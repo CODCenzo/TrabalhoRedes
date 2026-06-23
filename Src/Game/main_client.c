@@ -13,6 +13,7 @@ int main(int argc, char **argv) {
   //                                   "4.jpg", "5.mp4", "6.mp4"};
 
   g = init_game();
+  /*msg para iniciar o jogo*/
 
   //srand((unsigned int)time(NULL));
   srand(300);

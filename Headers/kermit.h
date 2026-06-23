@@ -24,13 +24,20 @@
 
 #define ACK_TYPE 0
 #define NACK_TYPE 1
+#define SHOW_TYPE 2
 #define DATA_TYPE 4
-#define FINAL_TYPE 16
+#define TXT_TYPE 5
+#define JPG_TYPE 6
+#define MP4_TYPE 7
 
-#define MOVE_UP_TYPE 12
-#define MOVE_DOWN_TYPE 13
+#define INITIAL_FILE_TYPE 9
 #define MOVE_RIGHT_TYPE 10
 #define MOVE_LEFT_TYPE 11
+#define MOVE_UP_TYPE 12
+#define MOVE_DOWN_TYPE 13
+
+#define ERROR_TYPE 15
+#define FINAL_TYPE 16
 
 
 #define DEFAULT_CRC 1

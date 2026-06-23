@@ -106,15 +106,7 @@ void load_default_level(Game *g) ;
 /*int load_csv_level(Game *g, const char *filepath) i*/
 void load_level(Game *g, const char *filepath) ;
 
-void init_colors() ;
-
 bool visible_to_pacman(Game *g, int x, int y) ;
-
-void draw_tile(Game *g, int x, int y, int screen_x, int screen_y) ;
-
-void draw_game(Game *g) ;
-
-void build_client_matrix(Game *g, char out[MAZE_SIZE][MAZE_SIZE + 1]) ;
 
 int try_move(Game *g, Actor *b, int dx, int dy) ;
 
@@ -135,8 +127,6 @@ int check_collision(Game *g) ;
 void collect_prize(Game *g) ;
 
 int play_round(Game *g, int ch) ;
-
-void show_end_screen(const char *title) ;
 
 char **alloc_matrix(int l, int c) ;
 

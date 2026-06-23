@@ -66,44 +66,6 @@ bool visible_to_pacman(Game *g, int x, int y) {
   return false;
 }
 
-void build_client_matrix(Game *g, char out[MAZE_SIZE][MAZE_SIZE + 1]) {
-  int x, y, i;
-
-  if (!g) {
-    perror("erro build_client_matrix\n");
-    exit(1);
-  }
-
-  for (y = 0; y < MAZE_SIZE; y++) {
-    for (x = 0; x < MAZE_SIZE; x++) {
-      if (!visible_to_pacman(g, x, y)) {
-        out[y][x] = ' ';
-      } else if (g->maze[y][x] == 'X') {
-        out[y][x] = 'X';
-      } else if (g->maze[y][x] >= '1' && g->maze[y][x] <= '6') {
-        out[y][x] = g->maze[y][x];
-      } else {
-        out[y][x] = '.';
-      }
-    }
-
-    out[y][MAZE_SIZE] = '\0';
-  }
-
-  for (i = 0; i < GHOSTS; i++) {
-    int gx = g->ghosts[i].body.x;
-    int gy = g->ghosts[i].body.y;
-
-    if (is_inside(gx, gy) && visible_to_pacman(g, gx, gy)) {
-      out[gy][gx] = g->ghosts[i].symbol;
-    }
-  }
-
-  if (is_inside(g->pacman.x, g->pacman.y)) {
-    out[g->pacman.y][g->pacman.x] = 'P';
-  }
-}
-
 void ghost_wall_rule(Game *g, Ghost *ghost, int prefer_left) {
   int left_dy, left_dx, right_dy, right_dx;
   int dirs[4][2];
@@ -186,6 +148,7 @@ void collect_prize(Game *g) {
     g->maze[g->pacman.y][g->pacman.x] = '0';
     g->prizes_collected++;
     g->score += 100;
+    /*funcao que avisa que vai vir um arquivo*/
   }
 }
 
@@ -202,7 +165,6 @@ int play_round(Game *g, int ch) {
     return 0;
 
   if (try_move(g, &g->pacman, dx, dy) == 0) {
-    //strcpy(last_event, "Movimento bloqueado por parede.");
     return 0;
   }
 
@@ -220,7 +182,6 @@ int play_round(Game *g, int ch) {
     return -1;
 
   if (g->prizes_collected >= PRIZES) {
-    //strcpy(last_event, "Fase concluida: 6 pastilhas douradas coletadas.");
     return 1;
   }
 
