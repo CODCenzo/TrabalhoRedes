@@ -24,7 +24,6 @@
 
 #define ACK_TYPE 0
 #define NACK_TYPE 1
-#define DATA_TYPE 4
 #define FINAL_TYPE 16
 
 #define MOVE_UP_TYPE 12
@@ -32,12 +31,11 @@
 #define MOVE_RIGHT_TYPE 10
 #define MOVE_LEFT_TYPE 11
 
-
 #define DEFAULT_CRC 1
 
 #define DEFAULT_MSG_SIZE 10
 
-#define TIMEOUT_MILLIS 50
+int cria_raw_socket(char* nome_interface_rede);
 
 struct kermit {
 	uint8_t tamDados ; // 5 bits

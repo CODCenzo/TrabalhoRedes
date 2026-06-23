@@ -1,5 +1,4 @@
-#include "game.h"
-#include "draw.h"
+#include "../../Headers/draw.h"
 
 // Desenha o caractere
 void draw_tile(Game *g, int x, int y, int screen_x, int screen_y) {

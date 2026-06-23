@@ -3,9 +3,6 @@
 
 #include "game.h"
 
-void reset_game_state(Game *g) ;
-
-// Desenha o caractere
 void draw_tile(Game *g, int x, int y, int screen_x, int screen_y) ;
 
 void draw_game(Game *g) ;
