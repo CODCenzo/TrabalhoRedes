@@ -78,7 +78,7 @@ void draw_client_tile(char tile, int screen_x, int screen_y) {
   }
 }
 
-void drawn_game_client(char matrix[MAZE_SIZE][MAZE_SIZE + 1]) {
+void draw_game_client(char matrix[MAZE_SIZE][MAZE_SIZE + 1]) {
   int x, y;
   int top = 2;
   int left = (COLS - MAZE_SIZE) / 2;

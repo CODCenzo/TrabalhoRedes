@@ -3,14 +3,27 @@
 
 #include "kermit.h"
 #include "protocol.h"
+#include "../Src/Game/game.h"
 
-typedef enum {
-    RECV_MAP,
-    RECV_FILE,
-    RECV_GAMEOVER,
-    RECV_WIN,
-    RECV_ERROR
-} recv_result_t;
+int send_game_file (int socket, int type, int prize) ;
 
+int recive_game_file (int socket) ;
 
+/*funcao que envia matriz*/
+int send_matrix(int socket, char m[MAZE_SIZE][MAZE_SIZE + 1]) ;
+
+/*recebe matriz*/
+int receive_matrix(int socket, char m[MAZE_SIZE][MAZE_SIZE + 1]) ;
+
+/*funcao que manda tecla*/
+int send_key(int socket, char key) ;
+
+/*funcao que recebe tecla*/
+int receive_key(int socket, char *key) ;
+
+/*funcao que manda tela de fim*/
+int send_end_screen(int socket) ;
+
+/*funcao que recebe tela de fim*/
+int receive_end_screen(int socket) ;
 #endif
