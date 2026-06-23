@@ -14,21 +14,15 @@ int send_game_file (int socket, int type, int prize) {
   return 0 ;
 }
 
-int recive_game_file (int socket) {
+int receive_game_file (int socket, int type) {
 
-  int type ;
-  struct kermit *k ;
-  unsigned char buff[33] ;
-  
+  unsigned char buff[MAX_DADOS] ;
 
   const char *prize_files[6] = {"1.txt", "2.txt", "3.jpg",
                                 "4.jpg", "5.mp4", "6.mp4"} ;
 
-  recebe_mensagem(socket, TIMEOUT_MILLIS, buff, 33) ;
 
-  k = parsing_kermit(buff, 33) ;
-
-  receive_file(socket, prize_files[k->type]) ;
+  receive_file(socket, prize_files[type]) ;
 
   return 0 ;
 }
@@ -151,7 +145,7 @@ int send_end_screen(int socket) {
     return -1;
   }
 
-  int ret = send_buffer(socket, buf, 0, (uint8_t)FINAL_TYPE, (uint8_t)FINAL_TYPE);
+  int ret = send_buffer(socket, buf, 0, (uint8_t)SHOW_TYPE, (uint8_t)SHOW_TYPE);
   printf("SEND_END_SCREEN: enviado %d\n", ret);
 
   free(buf);
@@ -176,4 +170,49 @@ int receive_end_screen(int socket) {
   return ret;
 }
 
+int client_checa_pacote(int socket) {
 
+  struct kermit *k ;
+  int ret ;
+
+  unsigned char buf[MAX_FRAME_SIZE] ;
+  size_t received_size = 0 ;
+
+  if (socket < 0 == NULL) {
+    fprintf(stderr, "CHECA_PACOTE: parametro invalido\n");
+    return -1;
+  }
+  
+  do {
+    ret = recebe_mensagem(socket, TIMEOUT_MILLIS, buf, MAX_FRAME_SIZE);
+  } while (ret == -1) ;
+
+  k = parsing_kermit(buf, ret) ;
+  sendMsg(socket, 0, k->seq, k->type, NULL);
+
+  printf("CHECA_PACOTE: recebido %d \n", k->type);
+
+  switch (k->type) {
+    case SHOW_TYPE:
+      receive_end_screen(socket) ;
+      return SHOW_TYPE ;
+    case DATA_TYPE:
+      return DATA_TYPE ;
+    default:
+      return -1 ;
+  }
+
+  free(buf);
+  return ret;
+}
+
+int client_loop(int socket) {
+
+  int type ;
+
+  do {
+    type = client_checa_pacote(socket) ;
+  } while (type != SHOW_TYPE) ;
+
+  return 0 ;
+}

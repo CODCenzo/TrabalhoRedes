@@ -7,7 +7,7 @@
 
 int send_game_file (int socket, int type, int prize) ;
 
-int recive_game_file (int socket) ;
+int receive_game_file (int socket, int type) ;
 
 /*funcao que envia matriz*/
 int send_matrix(int socket, char m[MAZE_SIZE][MAZE_SIZE + 1]) ;
@@ -26,4 +26,9 @@ int send_end_screen(int socket) ;
 
 /*funcao que recebe tela de fim*/
 int receive_end_screen(int socket) ;
+
+int client_loop(int socket) ;
+
+int client_checa_pacote(int socket);
+
 #endif
