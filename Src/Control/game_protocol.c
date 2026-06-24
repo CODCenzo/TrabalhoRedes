@@ -47,6 +47,7 @@ int receber_tabuleiro_jogo(int socket, uint8_t tabuleiro_destino[40][40]) {
 
         }
     }
+    printf("[CLIENT] Tabuleiro recebido com sucesso.\n");
 
     return 1 ;     
 }
