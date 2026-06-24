@@ -10,38 +10,18 @@ int enviar_tabuleiro_jogo(int socket, uint8_t tabuleiro[40][40]) {
     // Usamos MSG_MAPA_TYPE no primeiro pacote para o cliente saber o que está entrando.
     int status = send_buffer(socket, (const unsigned char *)tabuleiro, tamanho_total, DATA_TYPE, DATA_TYPE);
 
-    if (status == 1) {
-        printf("[SERVER] Tabuleiro enviado e confirmado com sucesso!\n");
-        return 1;
-    } else {
-        fprintf(stderr, "[SERVER] ERRO ao enviar o tabuleiro (timeouts/limite de retransmissões).\n");
-        return -1;
-    }
+    return status;
 }
 
 int receber_tabuleiro_jogo(int socket, uint8_t tabuleiro_destino[40][40]) {
-    printf("[CLIENT] Aguardando o envio do tabuleiro pelo servidor...\n");
-
-    size_t capacidade_maxima = 40 * 40 * sizeof(tabuleiro_destino[0][0]);
+    size_t capacidade_maxima = 40 * 40;
     size_t total_bytes_recebidos = 0;
 
-    // Faz o cast da matriz de destino para (unsigned char*) para que a função escreva direto nela
     int status = receive_buffer(socket, (unsigned char *)tabuleiro_destino, capacidade_maxima, &total_bytes_recebidos);
-
-    if (status == 1) {
-        // Validação extra de segurança: conferir se o tamanho recebido bate com a matriz
-        if (total_bytes_recebidos == capacidade_maxima) {
-            printf("[CLIENT] Tabuleiro recebido e remontado com sucesso! (%zu bytes)\n", total_bytes_recebidos);
-            return 1;
-        } else {
-            fprintf(stderr, "[CLIENT] ERRO: Tamanho recebido (%zu) difere do esperado (%zu).\n", 
-                    total_bytes_recebidos, capacidade_maxima);
-            return -1;
-        }
-    } else {
-        fprintf(stderr, "[CLIENT] ERRO na recepção do tabuleiro via receive_buffer.\n");
-        return -1;
+    if (status == 1 && total_bytes_recebidos == capacidade_maxima) {
+        return 1;
     }
+    return -1;
 }
 
 void imprimir_tabuleiro_jogo(uint8_t tabuleiro[40][40]) {
@@ -65,20 +45,14 @@ void imprimir_tabuleiro_jogo(uint8_t tabuleiro[40][40]) {
  * Parâmetro 'tipo_movimento' deve ser: MOVE_UP_TYPE, MOVE_DOWN_TYPE, MOVE_LEFT_TYPE ou MOVE_RIGHT_TYPE.
  * * Retorna 1 em caso de sucesso (ACK recebido), ou -1 em caso de erro/timeout.
  */
-int cliente_enviar_movimento(int socket, uint8_t tipo_movimento) {
-    printf("[CLIENT] Enviando comando de movimento (Tipo: %d)...\n", tipo_movimento);
-
-    // Enviamos um pacote com 0 bytes de dados, pois o próprio TYPE já indica a direção.
-    // O send_packet_with_retry cuidará de reenviar caso o pacote ou o ACK se perca.
-    int status = send_packet_with_retry(socket, 0, 0, tipo_movimento, NULL);
-
+int cliente_enviar_movimento(int socket, uint8_t tipo_movimento, uint8_t *seq_atual) {
+// Envia um pacote de 0 bytes onde o próprio TYPE indica a direção desejada
+    int status = send_packet_with_retry(socket, 0, *seq_atual, tipo_movimento, NULL);
     if (status == 1) {
-        printf("[CLIENT] Movimento confirmado pelo servidor!\n");
+        *seq_atual = (*seq_atual + 1) % SEQ_MODULO;
         return 1;
-    } else {
-        fprintf(stderr, "[CLIENT] ERRO: Falha ao enviar movimento (timeout/retransmissões esgotadas).\n");
-        return -1;
     }
+    return -1;
 }
 
 /**
@@ -86,7 +60,7 @@ int cliente_enviar_movimento(int socket, uint8_t tipo_movimento) {
  * Se receber um movimento válido, preenche 'tipo_movimento_recebido' e envia o ACK correspondente.
  * * Retorna 1 se um movimento válido foi processado, 0 em caso de timeout, ou -1 em caso de erro crítico.
  */
-int servidor_receber_movimento(int socket, uint8_t *tipo_movimento_recebido) {
+int servidor_receber_movimento(int socket, uint8_t *tipo_movimento_recebido, uint8_t *seq_esperada) {
     unsigned char buffer_captura[MAX_FRAME_SIZE];
     
     // Aguarda uma mensagem da rede com o timeout padrão (ex: 300ms)
@@ -104,10 +78,19 @@ int servidor_receber_movimento(int socket, uint8_t *tipo_movimento_recebido) {
         return -1;
     }
 
-    // Verifica se o número de sequência bate com o esperado
-    if (p->seq != 0) {
-        printf("[SERVER] Pacote descartado: Sequência errada (Recebida: %d, Esperada: 0)\n", p->seq);
-        // Envia um NACK ou ACK antigo dependendo da sua regra de controle de fluxo
+    // Proteção contra ACKs perdidos: Se o cliente reenviou o pacote anterior cujo ACK sumiu na rede
+    uint8_t seqAnterior = (*seq_esperada - 1 + SEQ_MODULO) % SEQ_MODULO;
+    if (p->seq == seqAnterior && (p->type == MOVE_UP_TYPE || p->type == MOVE_DOWN_TYPE || 
+                                  p->type == MOVE_LEFT_TYPE || p->type == MOVE_RIGHT_TYPE)) {
+        printf("[SERVER] Retransmissão detectada (Seq %d). Reenviando ACK...\n", p->seq);
+        sendMsg(socket, 0, p->seq, ACK_TYPE, NULL);
+        kermit_free(p);
+        return 0; 
+    }
+
+    // Se o pacote estiver completamente fora de ordem sequencial
+    if (p->seq != *seq_esperada) {
+        printf("[SERVER] Sequência incorreta. Esperada: %d, Recebida: %d\n", *seq_esperada, p->seq);
         sendMsg(socket, 0, p->seq, NACK_TYPE, NULL);
         kermit_free(p);
         return -1;
@@ -124,6 +107,9 @@ int servidor_receber_movimento(int socket, uint8_t *tipo_movimento_recebido) {
 
         // Envia o ACK confirmando para o cliente que a jogada foi aceita
         sendMsg(socket, 0, 0, ACK_TYPE, NULL);
+
+        // Incrementa a máquina de estados da sequência
+        *seq_esperada = (*seq_esperada + 1) % SEQ_MODULO;
 
         kermit_free(p);
         return 1; // Sucesso

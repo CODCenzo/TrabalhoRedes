@@ -14,11 +14,13 @@ int receber_tabuleiro_jogo(int socket, uint8_t tabuleiro_destino[40][40]);
 
 void imprimir_tabuleiro_jogo(uint8_t tabuleiro[40][40]);
 
-int cliente_enviar_movimento(int socket, uint8_t tipo_movimento);
+int cliente_enviar_movimento(int socket, uint8_t tipo_movimento, uint8_t *seq_atual);
 
-int servidor_receber_movimento(int socket, uint8_t *tipo_movimento_recebido);
+int servidor_receber_movimento(int socket, uint8_t *tipo_movimento_recebido, uint8_t *seq_esperada);
 
 int servidor_envia_game_show (int socket, uint8_t tipo_msg);
+
+int client_receber_game_show (int socket, uint8_t *tipo_msg);
 
 int client_receber_game_show (int socket, uint8_t *tipo_msg);
 

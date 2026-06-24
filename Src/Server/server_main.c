@@ -12,52 +12,62 @@
 #include "../../Headers/draw.h"
 
 int main(int argc, char *argv[]) {
+  srand((unsigned int)time(NULL));
 
-    srand((unsigned int)time(NULL));
+  if (argc < 2) {
+    fprintf(stderr, "Uso: %s <interface> [labirinto.csv]\n", argv[0]);
+    fprintf(stderr, "Exemplo: %s eth0 labirinto.csv\n", argv[0]);
+    return EXIT_FAILURE;
+  }
 
-    if (argc < 2) {
-        fprintf(stderr, "Uso: %s <interface> [labirinto.csv]\n", argv[0]);
-        fprintf(stderr, "Exemplo: %s eth0 labirinto.csv\n", argv[0]);
-        return EXIT_FAILURE;
+  const char *interface = argv[1];
+
+  /* ── Cria o raw socket ── */
+  int sock = cria_raw_socket((char *)interface);
+  if (sock < 0) {
+    fprintf(stderr, "SERVER: falha ao criar socket em %s\n", interface);
+    return EXIT_FAILURE;
+  }
+  printf("SERVER: socket criado (fd=%d)\n", sock);
+
+  bool running = true;
+  Game *g = init_game();
+
+  srand(300);
+  load_level(g, NULL);
+
+  // 1. Envia o estado inicial do labirinto assim que o cliente conecta
+  printf("SERVER: Enviando tabuleiro inicial...\n");
+  enviar_tabuleiro_jogo(sock, g->maze);
+
+  uint8_t tipoMsgRecebida = 0;
+  uint8_t seq_esperada_mov = 0; // Sincronizador de sequência do servidor
+
+  printf("SERVER: Pronto e aguardando jogadas do cliente...\n");
+    
+  // 2. Loop principal do servidor para escuta contínua de comandos
+  while (running) {
+    int resultado = servidor_receber_movimento(sock, &tipoMsgRecebida, &seq_esperada_mov);
+
+    if (resultado == 1) {
+      printf("SERVER: Movimento detectado (Tipo: %d). Atualizando lógica do jogo...\n", tipoMsgRecebida);
+            
+      /* * [INTEGRAÇÃO COM O SEU JOGO]: 
+      * Substitua a linha abaixo pela função real do seu 'game.h' que processa 
+      * as coordenadas baseada no tipoMsgRecebida (Ex: MOVE_UP_TYPE atualiza a linha do player).
+      */
+      // computar_movimento_personagem(g, tipoMsgRecebida); 
+
+      // 3. Envia de volta a matriz atualizada pós-jogada para o cliente renderizar
+      printf("SERVER: Enviando matriz atualizada para o cliente.\n");
+      enviar_tabuleiro_jogo(sock, g->maze);
     }
-
-    const char *interface = argv[1];
-    // const char *arq_mapa  = (argc >= 3) ? argv[2] : NULL;
-
-    /* ── Cria o raw socket ── */
-    int sock = cria_raw_socket((char *)interface);
-    if (sock < 0) {
-        fprintf(stderr, "SERVER: falha ao criar socket em %s\n", interface);
-        return EXIT_FAILURE;
-    }
-    printf("SERVER: socket criado (fd=%d)\n", sock);
-
-
-    int ch;
-    int result = 0;
-    bool running = true;
-    Game *g;
-
-    g = init_game();
-
-    //srand((unsigned int)time(NULL));
-    srand(300);
-    // initscr();
-    // raw();
-    // noecho();
-    // curs_set(0);
-    // keypad(stdscr, TRUE);
-    // timeout(-1);
-    // init_colors();
-    load_level(g, NULL);
-
-    // enviar_tabuleiro_jogo(sock, g->maze);
-
-    uint8_t *tipoMsg;
-   if (client_receber_game_show(sock, tipoMsg) == 1) {
-    printf("MOVIMENTO RECEBIDO COM SUCESSO\n");
-   }  
+        
+    // Caso queira adicionar alguma condição de término do servidor baseada no estado do jogo:
+    // if (g->player_ganhou) running = false;
+  }
 
   close(sock);
-  return EXIT_SUCCESS;
+  // free_game(g); // Se houver função de desalocação
+    return EXIT_SUCCESS;
 }
