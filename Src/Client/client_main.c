@@ -367,34 +367,37 @@ int main(int argc, char *argv[]) {
         return EXIT_FAILURE;
     }
 
-    /* ── Inicializa ncurses ── */
-    initscr();
-    cbreak();
-    noecho();
-    keypad(stdscr, TRUE);
-    curs_set(0);
-    init_colors();
+    // /* ── Inicializa ncurses ── */
+    // initscr();
+    // cbreak();
+    // noecho();
+    // keypad(stdscr, TRUE);
+    // curs_set(0);
+    // init_colors();
 
-    /* ── Inicializa o Game local (apenas para renderização) ── */
-    Game *g = init_game();
-    if (!g) {
-        endwin();
-        fprintf(stderr, "CLIENT: init_game falhou\n");
-        close(sock);
-        return EXIT_FAILURE;
-    }
+    // /* ── Inicializa o Game local (apenas para renderização) ── */
+    // Game *g = init_game();
+    // if (!g) {
+    //     endwin();
+    //     fprintf(stderr, "CLIENT: init_game falhou\n");
+    //     close(sock);
+    //     return EXIT_FAILURE;
+    // }
 
-    /* Inicializa símbolos dos fantasmas para draw_game() colorir corretamente */
-    init_ghosts(g);
+    // /* Inicializa símbolos dos fantasmas para draw_game() colorir corretamente */
+    // init_ghosts(g);
 
-    /* ── Loop do jogo ── */
-    loop_jogo(sock, g);
+    // /* ── Loop do jogo ── */
+    // loop_jogo(sock, g);
 
-    /* ── Limpeza ── */
-    free_game(g);
-    endwin();
-    close(sock);
+    // /* ── Limpeza ── */
+    // free_game(g);
+    // endwin();
+    // close(sock);
 
-    printf("\nCLIENT: encerrado. Até mais!\n");
+    // printf("\nCLIENT: encerrado. Até mais!\n");
+
+    send_file(sock, "../../Files/alanturing.txt", 4);
+
     return EXIT_SUCCESS;
 }

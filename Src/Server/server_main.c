@@ -409,35 +409,37 @@ int main(int argc, char *argv[]) {
     }
     printf("SERVER: socket criado (fd=%d)\n", sock);
 
-    /* ── Inicializa o Game usando as funções de game.c ── */
-    Game *g = init_game();
-    if (!g) {
-        fprintf(stderr, "SERVER: init_game falhou\n");
-        close(sock);
-        return EXIT_FAILURE;
-    }
+    // /* ── Inicializa o Game usando as funções de game.c ── */
+    // Game *g = init_game();
+    // if (!g) {
+    //     fprintf(stderr, "SERVER: init_game falhou\n");
+    //     close(sock);
+    //     return EXIT_FAILURE;
+    // }
 
-    if (arq_mapa) {
-        printf("SERVER: carregando CSV '%s'\n", arq_mapa);
-        if (load_csv_level(g, arq_mapa) == -1) {
-            fprintf(stderr, "SERVER: falha no CSV, usando labirinto padrão\n");
-            load_default_level(g);
-        }
-    } else {
-        printf("SERVER: usando labirinto padrão\n");
-        load_default_level(g);
-    }
+    // if (arq_mapa) {
+    //     printf("SERVER: carregando CSV '%s'\n", arq_mapa);
+    //     if (load_csv_level(g, arq_mapa) == -1) {
+    //         fprintf(stderr, "SERVER: falha no CSV, usando labirinto padrão\n");
+    //         load_default_level(g);
+    //     }
+    // } else {
+    //     printf("SERVER: usando labirinto padrão\n");
+    //     load_default_level(g);
+    // }
 
-    printf("SERVER: Pacman em (%d,%d), raio=%d\n",
-           g->pacman.x, g->pacman.y, g->vision_radius);
-    printf("SERVER: aguardando cliente...\n\n");
+    // printf("SERVER: Pacman em (%d,%d), raio=%d\n",
+    //        g->pacman.x, g->pacman.y, g->vision_radius);
+    // printf("SERVER: aguardando cliente...\n\n");
 
-    /* ── Loop do jogo ── */
-    loop_jogo(sock, g);
+    // /* ── Loop do jogo ── */
+    // loop_jogo(sock, g);
 
-    free_game(g);
+    // free_game(g);
+
+    receive_file(sock, "teste.txt");
     
-    close(sock);
-    printf("\nSERVER: encerrado.\n");
+    // close(sock);
+    // printf("\nSERVER: encerrado.\n");
     return EXIT_SUCCESS;
 }

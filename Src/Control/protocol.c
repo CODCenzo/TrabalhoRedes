@@ -266,7 +266,7 @@ int send_file(int socket, const char *filepath, int fileType) {
 
     FILE *f = fopen(filepath, "rb");
     if (f == NULL) {
-        perror("SEND_FILE: fopen");
+        perror("SEND_FILE: fopen\n");
         return -1;
     }
 
@@ -276,7 +276,7 @@ int send_file(int socket, const char *filepath, int fileType) {
     rewind(f);
 
     if (fileSizeSigned < 0) {
-        perror("SEND_FILE: ftell");
+        perror("SEND_FILE: ftell\n");
         fclose(f);
         return -1;
     }
@@ -352,7 +352,7 @@ int receive_file(int socket, const char *filepath) {
     /* Escreve os dados recebidos no arquivo de saída */
     FILE *f = fopen(filepath, "wb");
     if (f == NULL) {
-        perror("RECEIVE_FILE: fopen");
+        perror("RECEIVE_FILE: fopen\n");
         free(buf);
         return -1;
     }

@@ -289,7 +289,10 @@ int sendMsg (int socket, uint8_t tamDados, uint8_t sequencia, uint8_t tipo, unsi
 		return -1;
 	}
 
-	int tamStuffed = stuffing(frameCompleto, tamFrameCompleto,frameStuffed, tamStuffMax);
+	// bit stuffing não esta funcionando
+	// int tamStuffed = stuffing(frameCompleto, tamFrameCompleto,frameStuffed, tamStuffMax);
+
+	int tamStuffed = tamFrameCompleto;
 	if (tamStuffed == -1) {
 		fprintf(stderr, "ERRO NO STUFFING\n");
 		free(frameCompleto);
@@ -344,7 +347,7 @@ int protocolo_e_valido(unsigned char* buffer, int tamanho_buffer) {
 		uint8_t crcCalculado = calculaCRC8(buffer + 1, tamDados + 2);
 
 		if (crcRecebido != crcCalculado) { 
-			printf("PACOTE CORROMPIDO | CRC RECEBIDO: %x | CRC CALCULADO %x", crcRecebido, crcCalculado);
+			printf("PACOTE CORROMPIDO | CRC RECEBIDO: %x | CRC CALCULADO %x\n", crcRecebido, crcCalculado);
 			return 0;
 		}
 
@@ -373,9 +376,9 @@ int recebe_mensagem(int soquete, int timeoutMillis, unsigned char* buffer, int t
 		bytes_lidos = recv(soquete, stuffedBuffer, sizeof(stuffedBuffer), 0);
 		if (bytes_lidos <= 0) {continue;}
 
-		int tamDestuffed = destuffing(stuffedBuffer, bytes_lidos, buffer, tamanho_buffer);
+		// int tamDestuffed = destuffing(stuffedBuffer, bytes_lidos, buffer, tamanho_buffer);
 
-		if (tamDestuffed > 0 && protocolo_e_valido(buffer, tamDestuffed)) { return tamDestuffed; }
+		if (protocolo_e_valido(buffer, bytes_lidos)) { return bytes_lidos; }
 	} while (timestamp() - comeco <= timeoutMillis);
 
 	return -1;
