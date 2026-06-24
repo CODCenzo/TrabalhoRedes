@@ -27,14 +27,20 @@ int main(int argc, char *argv[]) {
         return EXIT_FAILURE;
     }
 
-    uint8_t m[40][40]; 
+    // uint8_t m[40][40]; 
 
-    // Agora m passa o endereço do bloco contínuo perfeitamente
-    if (receber_tabuleiro_jogo(sock, m) == 1) {
-        printf("CLIENT: Tabuleiro recebido e pronto para uso!\n");
+    // // Agora m passa o endereço do bloco contínuo perfeitamente
+    // if (receber_tabuleiro_jogo(sock, m) == 1) {
+    //     printf("CLIENT: Tabuleiro recebido e pronto para uso!\n");
+    // }
+
+    // imprimir_tabuleiro_jogo(m);
+
+    if (cliente_enviar_movimento(sock, MOVE_RIGHT_TYPE) == 1) {
+        printf("MOVIMENTO ENVIADO COM SUCESSO\n");
+
+        ///////testaeastasttee
     }
-
-    imprimir_tabuleiro_jogo(m);
 
     close(sock);
     return EXIT_SUCCESS;

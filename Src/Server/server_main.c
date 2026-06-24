@@ -51,8 +51,12 @@ int main(int argc, char *argv[]) {
     // init_colors();
     load_level(g, NULL);
 
-    enviar_tabuleiro_jogo(sock, g->maze);
+    // enviar_tabuleiro_jogo(sock, g->maze);
 
+    uint8_t *movimentoRecebido;
+   if (servidor_receber_movimento(sock, movimentoRecebido) == 1) {
+    printf("MOVIMENTO RECEBIDO COM SUCESSO\n");
+   }  
 
   close(sock);
   return EXIT_SUCCESS;
