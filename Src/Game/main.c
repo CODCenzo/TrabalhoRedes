@@ -1,14 +1,17 @@
 #include "game.h"
 #include "client.h"
 #include "draw.h"
+#include "../../Headers/socket.h"
 #include "../../Headers/game_protocol.h"
+#include "../../Headers/protocol.h"
 
 int main(int argc, char **argv) {
-  int ch;
+  int aux;
+  char ch;
   int result = 0;
   bool running = true;
   Game *g;
-  const char *maze_file = argc > 1 ? argv[1] : NULL;
+  const char *maze_file = argc > 2 ? argv[2] : NULL;
   
   //const char *prize_files[PRIZES] = {"1.txt", "2.txt", "3.jpg",
   //                                   "4.jpg", "5.mp4", "6.mp4"};
@@ -28,7 +31,11 @@ int main(int argc, char **argv) {
   init_colors();
   load_level(g, maze_file);
 
-  int socket = cria_socket() ;
+  int socket = cria_raw_socket(argv[1]) ;
+  if (socket < 0) {
+    fprintf(stderr, "Erro ao criar socket\n");
+    return -1;
+  }
   
   while (running) {
 
@@ -50,9 +57,29 @@ int main(int argc, char **argv) {
       send_end_screen(socket) ;
     }
 
-    ch = getch();
+    aux = server_checa_pacote(socket) ;
+
+    if (aux == MOVE_UP_TYPE) {
+      ch = 'w';
+    }
+    else if (aux == MOVE_DOWN_TYPE) {
+      ch = 's';
+    }
+    else if (aux == MOVE_LEFT_TYPE) {
+      ch = 'a';
+    }
+    else if (aux == MOVE_RIGHT_TYPE) {
+      ch = 'd';
+    }
+    else if (aux == QUIT_TYPE) {
+      ch = 'q';
+    }
+    else if (aux == RESTART_TYPE) {
+      ch = 'r';
+    }
+
     /*Pegar tecla do client*/
-    receive_key(socket, &ch) ;
+    //ch = getch();
 
     if (ch == 'q' || ch == 'Q') {
       running = false;

@@ -19,16 +19,18 @@ int receive_matrix(int socket, char m[MAZE_SIZE][MAZE_SIZE + 1]) ;
 int send_key(int socket, char key) ;
 
 /*funcao que recebe tecla*/
-int receive_key(int socket, char *key) ;
+//int receive_key(int socket, char *key) ;
 
 /*funcao que manda tela de fim*/
 int send_end_screen(int socket) ;
 
 /*funcao que recebe tela de fim*/
-int receive_end_screen(int socket) ;
+//int receive_end_screen(int socket) ;
 
 int client_loop(int socket) ;
 
 int client_checa_pacote(int socket);
+
+int server_checa_pacote(int socket) ;
 
 #endif
