@@ -44,22 +44,22 @@ int main(int argc, char *argv[]) {
   char input;
   do {
     // Captura a entrada do usuário (ajuste caso getch() dependa de inicialização específica)
-    input = getch(); 
+    scanf("%c", &input);
     int moveu = 0;
 
     switch (input) {
       case 'w':
-        moveu = cliente_enviar_movimento(sock, MOVE_UP_TYPE, &seq_mov);
+        moveu = cliente_enviar_movimento(sock, MOVE_UP_TYPE);
         break;
       case 'a':
         // CORRIGIDO: Era MOVE_DOWN_TYPE no seu código original
-        moveu = cliente_enviar_movimento(sock, MOVE_LEFT_TYPE, &seq_mov); 
+        moveu = cliente_enviar_movimento(sock, MOVE_LEFT_TYPE); 
         break;
       case 's':
-        moveu = cliente_enviar_movimento(sock, MOVE_DOWN_TYPE, &seq_mov);
+        moveu = cliente_enviar_movimento(sock, MOVE_DOWN_TYPE);
         break;
       case 'd':
-        moveu = cliente_enviar_movimento(sock, MOVE_RIGHT_TYPE, &seq_mov);
+        moveu = cliente_enviar_movimento(sock, MOVE_RIGHT_TYPE);
         break;
       case 'q':
         printf("CLIENT: Encerrando o jogo...\n");
@@ -67,6 +67,7 @@ int main(int argc, char *argv[]) {
       default:
         break;
     }
+    sleep(1);
 
     // 2. Se um comando válido foi enviado, aguarda o servidor processar e devolver a matriz atualizada
     if (moveu == 1) {

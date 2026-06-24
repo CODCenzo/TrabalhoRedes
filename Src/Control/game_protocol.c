@@ -45,14 +45,10 @@ void imprimir_tabuleiro_jogo(uint8_t tabuleiro[40][40]) {
  * Parâmetro 'tipo_movimento' deve ser: MOVE_UP_TYPE, MOVE_DOWN_TYPE, MOVE_LEFT_TYPE ou MOVE_RIGHT_TYPE.
  * * Retorna 1 em caso de sucesso (ACK recebido), ou -1 em caso de erro/timeout.
  */
-int cliente_enviar_movimento(int socket, uint8_t tipo_movimento, uint8_t *seq_atual) {
+int cliente_enviar_movimento(int socket, uint8_t tipo_movimento) {
 // Envia um pacote de 0 bytes onde o próprio TYPE indica a direção desejada
-    int status = send_packet_with_retry(socket, 0, *seq_atual, tipo_movimento, NULL);
-    if (status == 1) {
-        *seq_atual = (*seq_atual + 1) % SEQ_MODULO;
-        return 1;
-    }
-    return -1;
+    int status = send_packet_with_retry(socket, 0, 0, tipo_movimento, NULL);
+    return status;
 }
 
 /**
@@ -60,7 +56,7 @@ int cliente_enviar_movimento(int socket, uint8_t tipo_movimento, uint8_t *seq_at
  * Se receber um movimento válido, preenche 'tipo_movimento_recebido' e envia o ACK correspondente.
  * * Retorna 1 se um movimento válido foi processado, 0 em caso de timeout, ou -1 em caso de erro crítico.
  */
-int servidor_receber_movimento(int socket, uint8_t *tipo_movimento_recebido, uint8_t *seq_esperada) {
+int servidor_receber_movimento(int socket, uint8_t *tipo_movimento_recebido) {
     unsigned char buffer_captura[MAX_FRAME_SIZE];
     
     // Aguarda uma mensagem da rede com o timeout padrão (ex: 300ms)
@@ -79,8 +75,7 @@ int servidor_receber_movimento(int socket, uint8_t *tipo_movimento_recebido, uin
     }
 
     // Proteção contra ACKs perdidos: Se o cliente reenviou o pacote anterior cujo ACK sumiu na rede
-    uint8_t seq_anterior = (*seq_esperada - 1 + SEQ_MODULO) % SEQ_MODULO;
-    if (p->seq == seq_anterior) {
+    if (p->seq == 0) {
         printf("[SERVER] Pacote duplicado detectado (Seq: %d). Reenviando ACK...\n", p->seq);
         sendMsg(socket, 0, p->seq, ACK_TYPE, NULL);
         kermit_free(p);
@@ -88,8 +83,8 @@ int servidor_receber_movimento(int socket, uint8_t *tipo_movimento_recebido, uin
     }
 
     // Se o pacote estiver completamente fora de ordem sequencial
-    if (p->seq != *seq_esperada) {
-        printf("[SERVER] Sequência incorreta. Esperada: %d, Recebida: %d\n", *seq_esperada, p->seq);
+    if (p->seq != 0) {
+        printf("[SERVER] Sequência incorreta. Esperada: 0, Recebida: %d\n", p->seq);
         sendMsg(socket, 0, p->seq, NACK_TYPE, NULL);
         kermit_free(p);
         return -1;
@@ -108,7 +103,6 @@ int servidor_receber_movimento(int socket, uint8_t *tipo_movimento_recebido, uin
         sendMsg(socket, 0, p->seq, ACK_TYPE, NULL);
 
         // Incrementa a máquina de estados da sequência
-        *seq_esperada = (*seq_esperada + 1) % SEQ_MODULO;
 
         kermit_free(p);
         return 1; // Sucesso

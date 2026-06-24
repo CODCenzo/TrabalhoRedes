@@ -47,7 +47,7 @@ int main(int argc, char *argv[]) {
     
   // 2. Loop principal do servidor para escuta contínua de comandos
   while (running) {
-    int resultado = servidor_receber_movimento(sock, &tipoMsgRecebida, &seq_esperada_mov);
+    int resultado = servidor_receber_movimento(sock, &tipoMsgRecebida);
 
     if (resultado == 1) {
       printf("SERVER: Movimento detectado (Tipo: %d). Atualizando lógica do jogo...\n", tipoMsgRecebida);
