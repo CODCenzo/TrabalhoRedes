@@ -32,33 +32,28 @@ int main(int argc, char *argv[]) {
     }
     printf("SERVER: socket criado (fd=%d)\n", sock);
 
-    const char *arquivo_saida = "recebido_resultado.txt";
-
-    printf("[RECEIVER] Aguardando início de transmissão pelo protocolo...\n");
     
-    // Fica em loop na máquina de estados aguardando os frames até o FINAL_TYPE
-    int resultado = receive_file(sock, arquivo_saida);
-
-    if (resultado == 1) {
-        printf("[RECEIVER] SUCESSO: Arquivo totalmente reconstruído em '%s'!\n", arquivo_saida);
+    unsigned char buffer_saida[512];
+    size_t tamanho_reconstruido = 0;
+    
+    printf("[RECEPTOR] Iniciando a máquina de estados do receive_buffer...\n");
+    
+    // Aguarda e reconstrói todos os fragmentos até encontrar o FINAL_TYPE
+    int status = receive_buffer(sock, buffer_saida, sizeof(buffer_saida), &tamanho_reconstruido);
+    
+    if (status == 1) {
+        printf("\n==============================================\n");
+        printf("[RECEPTOR] SUCESSO! Buffer remontado com sucesso.\n");
+        printf("[RECEPTOR] Total de bytes recebidos: %zu\n", tamanho_reconstruido);
         
-        // Exibe o conteúdo do arquivo reconstruído para conferência manual visual
-        printf("[RECEIVER] Conteúdo do arquivo gravado:\n\"");
-        FILE *f = fopen(arquivo_saida, "r");
-        if (f) {
-            int ch;
-            while ((ch = fgetc(f)) != EOF) {
-                putchar(ch);
-            }
-            fclose(f);
-        }
-        printf("\"\n");
+        // Finaliza a string para impressão segura
+        buffer_saida[tamanho_reconstruido] = '\0';
+        printf("[RECEPTOR] Conteúdo final:\n\"%s\"\n", buffer_saida);
+        printf("==============================================\n");
     } else {
-        fprintf(stderr, "[RECEIVER] FALHA: Erro no meio da recepção ou estourou timeouts.\n");
+        fprintf(stderr, "[RECEPTOR] ERRO: Falha ao remontar o buffer ou estourou timeouts.\n");
     }
 
     close(sock);
-    return (resultado == 1) ? EXIT_SUCCESS : EXIT_FAILURE;
-
     return EXIT_SUCCESS;
 }

@@ -37,20 +37,32 @@ int main(int argc, char *argv[]) {
         return EXIT_FAILURE;
     }
 
-    const char *arquivo_envio = "enviar_teste.txt";
-    gerar_arquivo_grande_teste(arquivo_envio, 100);
+    #define TAM_BUFFER_TESTE 150
 
-    printf("[SENDER] Iniciando transmissão via protocol.c (send_file)...\n");
-    // Passa 1 (ou um tipo qualquer mapeado para dados de arquivo)
-    int resultado = send_file(sock, arquivo_envio, 1); 
+    unsigned char dados_teste[TAM_BUFFER_TESTE + 1];
+    
+    // Preenche o buffer com um padrão textual conhecido ("ABCDE...")
+    for (int i = 0; i < TAM_BUFFER_TESTE; i++) {
+        dados_teste[i] = 'A' + (i % 26);
+    }
+    dados_teste[TAM_BUFFER_TESTE] = '\0';
 
-    if (resultado == 1) {
-        printf("[SENDER] SUCESSO: Todos os pacotes foram transmitidos e confirmados!\n");
+    printf("[EMISSOR] Dados originais gerados (%d bytes).\n", TAM_BUFFER_TESTE);
+    printf("[EMISSOR] Iniciando send_buffer fragmentado (Stop-and-Wait)...\n");
+
+    // Tipos fictícios para emular cabeçalhos dinâmicos do seu jogo/sistema
+    uint8_t primeiro_tipo = 5;  // Ex: Início de transmissão
+    uint8_t tipo_meio = 1;      // Ex: DATA_TYPE padrão
+
+    // Dispara a cadeia de retransmissões automáticas controlada por ACKs
+    int status = send_buffer(sock, dados_teste, TAM_BUFFER_TESTE, primeiro_tipo, tipo_meio);
+
+    if (status == 1) {
+        printf("[EMISSOR] SUCESSO! Todos os fragmentos receberam ACK com sucesso.\n");
     } else {
-        fprintf(stderr, "[SENDER] FALHA: A transmissão falhou ou estourou o limite de tentativas.\n");
+        fprintf(stderr, "[EMISSOR] ERRO: Transmissão abortada (limite de tentativas excedido).\n");
     }
 
     close(sock);
-    unlink(arquivo_envio); // Remove o arquivo local temporário de teste
-    return (resultado == 1) ? EXIT_SUCCESS : EXIT_FAILURE;
+    return EXIT_SUCCESS;
 }
