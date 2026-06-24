@@ -32,28 +32,28 @@ int main(int argc, char *argv[]) {
     }
     printf("SERVER: socket criado (fd=%d)\n", sock);
 
-    
-    unsigned char buffer_saida[512];
-    size_t tamanho_reconstruido = 0;
-    
-    printf("[RECEPTOR] Iniciando a máquina de estados do receive_buffer...\n");
-    
-    // Aguarda e reconstrói todos os fragmentos até encontrar o FINAL_TYPE
-    int status = receive_buffer(sock, buffer_saida, sizeof(buffer_saida), &tamanho_reconstruido);
-    
-    if (status == 1) {
-        printf("\n==============================================\n");
-        printf("[RECEPTOR] SUCESSO! Buffer remontado com sucesso.\n");
-        printf("[RECEPTOR] Total de bytes recebidos: %zu\n", tamanho_reconstruido);
-        
-        // Finaliza a string para impressão segura
-        buffer_saida[tamanho_reconstruido] = '\0';
-        printf("[RECEPTOR] Conteúdo final:\n\"%s\"\n", buffer_saida);
-        printf("==============================================\n");
-    } else {
-        fprintf(stderr, "[RECEPTOR] ERRO: Falha ao remontar o buffer ou estourou timeouts.\n");
-    }
 
-    close(sock);
-    return EXIT_SUCCESS;
+    int ch;
+    int result = 0;
+    bool running = true;
+    Game *g;
+
+    g = init_game();
+
+    //srand((unsigned int)time(NULL));
+    srand(300);
+    // initscr();
+    // raw();
+    // noecho();
+    // curs_set(0);
+    // keypad(stdscr, TRUE);
+    // timeout(-1);
+    // init_colors();
+    load_level(g, NULL);
+
+    enviar_tabuleiro_jogo(sock, g->maze);
+
+
+  close(sock);
+  return EXIT_SUCCESS;
 }

@@ -10,16 +10,6 @@
 #include "../../Headers/game.h"
 #include "../../Headers/draw.h"
 
-void gerar_arquivo_grande_teste(const char *nome, size_t tamanho) {
-    FILE *f = fopen(nome, "wb");
-    if (!f) return;
-    for (size_t i = 0; i < tamanho; i++) {
-        // Preenche com um padrão cíclico de caracteres de 'A' a 'Z'
-        fputc('A' + (i % 26), f);
-    }
-    fclose(f);
-    printf("[SENDER] Arquivo de teste '%s' criado com %zu bytes.\n", nome, tamanho);
-}
 
 int main(int argc, char *argv[]) {
 
@@ -37,30 +27,11 @@ int main(int argc, char *argv[]) {
         return EXIT_FAILURE;
     }
 
-    #define TAM_BUFFER_TESTE 150
+    uint8_t m[40][40]; 
 
-    unsigned char dados_teste[TAM_BUFFER_TESTE + 1];
-    
-    // Preenche o buffer com um padrão textual conhecido ("ABCDE...")
-    for (int i = 0; i < TAM_BUFFER_TESTE; i++) {
-        dados_teste[i] = 'A' + (i % 26);
-    }
-    dados_teste[TAM_BUFFER_TESTE] = '\0';
-
-    printf("[EMISSOR] Dados originais gerados (%d bytes).\n", TAM_BUFFER_TESTE);
-    printf("[EMISSOR] Iniciando send_buffer fragmentado (Stop-and-Wait)...\n");
-
-    // Tipos fictícios para emular cabeçalhos dinâmicos do seu jogo/sistema
-    uint8_t primeiro_tipo = 5;  // Ex: Início de transmissão
-    uint8_t tipo_meio = 1;      // Ex: DATA_TYPE padrão
-
-    // Dispara a cadeia de retransmissões automáticas controlada por ACKs
-    int status = send_buffer(sock, dados_teste, TAM_BUFFER_TESTE, primeiro_tipo, tipo_meio);
-
-    if (status == 1) {
-        printf("[EMISSOR] SUCESSO! Todos os fragmentos receberam ACK com sucesso.\n");
-    } else {
-        fprintf(stderr, "[EMISSOR] ERRO: Transmissão abortada (limite de tentativas excedido).\n");
+    // Agora m passa o endereço do bloco contínuo perfeitamente
+    if (receber_tabuleiro_jogo(sock, m) == 1) {
+        printf("CLIENT: Tabuleiro recebido e pronto para uso!\n");
     }
 
     close(sock);

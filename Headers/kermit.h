@@ -22,14 +22,25 @@
 #define MAX_DADOS 31
 #define MIN_DADOS 10
 
+//-----------------------
 #define ACK_TYPE 0
 #define NACK_TYPE 1
-#define FINAL_TYPE 16
+#define SHOW_TYPE 2
 
-#define MOVE_UP_TYPE 12
-#define MOVE_DOWN_TYPE 13
+#define DATA_TYPE 4
+#define TXT_TYPE 5
+#define JPG_TYPE 6
+#define MP4_TYPE 7
+#define QUIT_TYPE 8
+#define INITIAL_FILE_TYPE 9
 #define MOVE_RIGHT_TYPE 10
 #define MOVE_LEFT_TYPE 11
+#define MOVE_UP_TYPE 12
+#define MOVE_DOWN_TYPE 13
+#define RESTART_TYPE 14
+#define ERROR_TYPE 15
+#define FINAL_TYPE 16
+//------------------------
 
 #define DEFAULT_CRC 1
 
