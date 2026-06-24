@@ -100,7 +100,7 @@ int servidor_receber_movimento(int socket, uint8_t *tipo_movimento_recebido) {
     }
 
     // Proteção contra ACKs perdidos: Se o cliente reenviou o pacote anterior cujo ACK sumiu na rede
-    if (p->seq == 0) {
+    /*if (p->seq == 0) {
         printf("[SERVER] Pacote duplicado detectado (Seq: %d). Reenviando ACK...\n", p->seq);
         sendMsg(socket, 0, p->seq, ACK_TYPE, NULL);
         kermit_free(p);
@@ -113,7 +113,7 @@ int servidor_receber_movimento(int socket, uint8_t *tipo_movimento_recebido) {
         sendMsg(socket, 0, p->seq, NACK_TYPE, NULL);
         kermit_free(p);
         return -1;
-    }
+    }*/
 
     // Verifica se o pacote é de fato um comando de movimento do personagem
     if (p->type == MOVE_UP_TYPE   || p->type == MOVE_DOWN_TYPE || 
