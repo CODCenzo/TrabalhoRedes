@@ -51,7 +51,7 @@ int main(int argc, char *argv[]) {
     // init_colors();
     load_level(g, NULL);
 
-    // enviar_tabuleiro_jogo(sock, g->maze);
+    enviar_tabuleiro_jogo(sock, g->maze);
 
     uint8_t *tipoMsg;
    if (client_receber_game_show(sock, tipoMsg) == 1) {
