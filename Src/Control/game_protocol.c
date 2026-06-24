@@ -1,27 +1,53 @@
 #include "../../Headers/game_protocol.h"
 
-int enviar_tabuleiro_jogo(int socket, uint8_t tabuleiro[40][40]) {
+int enviar_tabuleiro_jogo(int socket, char **tabuleiro) {
+    int status;
+
     printf("[SERVER] Preparando envio do tabuleiro de %zu bytes...\n", sizeof(tabuleiro[40][40]) * 40 * 40);
     
     // Calcula o tamanho total da matriz na memória (1600 bytes se for uint8_t/char)
-    size_t tamanho_total = 40 * 40 * sizeof(tabuleiro[0][0]);
+    size_t tamanho = 40 * sizeof(char);
 
     // Faz o cast da matriz para (const unsigned char*) para o send_buffer aceitar.
     // Usamos MSG_MAPA_TYPE no primeiro pacote para o cliente saber o que está entrando.
-    int status = send_buffer(socket, (const unsigned char *)tabuleiro, tamanho_total, DATA_TYPE, DATA_TYPE);
+    for (int i = 0; i < 40; i++) {
+        status = send_buffer(socket, (const unsigned char *)tabuleiro[i], tamanho, DATA_TYPE, DATA_TYPE);
+        if (status != 1) {
+            fprintf(stderr, "[SERVER] ERRO ao enviar a linha %d do tabuleiro.\n", i);
+            return -1;
+        }
+    }
 
-    return status;
+    return 1 ;
 }
 
 int receber_tabuleiro_jogo(int socket, uint8_t tabuleiro_destino[40][40]) {
-    size_t capacidade_maxima = 40 * 40 * sizeof(tabuleiro_destino[0][0]);
+    int status;
+
+    printf("[CLIENT] Aguardando o envio do tabuleiro pelo servidor...\n");
+
+    size_t capacidade_maxima = 40 * sizeof(tabuleiro_destino[0][0]);
     size_t total_bytes_recebidos = 0;
 
-    int status = receive_buffer(socket, (unsigned char *)tabuleiro_destino, capacidade_maxima, &total_bytes_recebidos);
-    if (status == 1 && total_bytes_recebidos == capacidade_maxima) {
-        return 1;
+    for (int i = 0; i < 40; i++) {
+        // Faz o cast da matriz de destino para (unsigned char*) para que a função escreva direto nela
+        status = receive_buffer(socket, (unsigned char *)tabuleiro_destino[i], capacidade_maxima, &total_bytes_recebidos);
+
+        if (status == 1) {
+        // Validação extra de segurança: conferir se o tamanho recebido bate com a matriz
+        if (total_bytes_recebidos == capacidade_maxima) {
+
+            } else {
+                fprintf(stderr, "[CLIENT] ERRO: Tamanho recebido (%zu) difere do esperado (%zu).\n", 
+                        total_bytes_recebidos, capacidade_maxima);
+                return -1;
+            }
+
+        }
     }
-    return -1;
+    printf("[CLIENT] Tabuleiro recebido com sucesso.\n");
+
+    return 1 ;  
 }
 
 void imprimir_tabuleiro_jogo(uint8_t tabuleiro[40][40]) {
