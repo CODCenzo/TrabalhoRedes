@@ -1,9 +1,10 @@
 TO DO LIST:
 
 High priority:
-- Bit stuffing
-- Lógica do cliente
+- Bit stuffing (X)
+- Lógica do cliente 
 - Lógica do servidor
+- Arrumar lógica de recebimento de sequência
 
 Mid priority:
 - 
