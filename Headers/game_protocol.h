@@ -3,7 +3,7 @@
 
 #include "kermit.h"
 #include "protocol.h"
-#include "../Src/Game/game.h"
+#include "game.h"
 
 int send_game_file (int socket, int type, int prize) ;
 

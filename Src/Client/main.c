@@ -1,6 +1,5 @@
-#include "game.h"
-#include "client.h"
-#include "draw.h"
+#include "../../Headers/game.h"
+#include "../../Headers/client.h"
 #include "../../Headers/game_protocol.h"
 
 int main(int argc, char **argv) {

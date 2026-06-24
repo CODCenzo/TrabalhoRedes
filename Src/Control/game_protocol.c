@@ -1,9 +1,7 @@
 #include "../../Headers/game_protocol.h"
-#include "../Game/client.h"
-#include "../Game/game.h"
-#include "../Game/draw.h"
-
-
+#include "../../Headers/client.h"
+#include "../../Headers/game.h"
+#include "../../Headers/draw.h"
 
 int send_game_file (int socket, int type, int prize) {
 
@@ -261,6 +259,7 @@ int client_loop(int socket) {
     case DATA_TYPE:
       receive_matrix(socket, matrix) ;
       draw_game_client(matrix) ;
+      printf("CLIENT_LOOP: recebido DATA_TYPE\n");
       break;
     
     default:

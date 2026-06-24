@@ -31,7 +31,7 @@ int wait_response(int socket, uint8_t msgSequence) {
 
     /* ACK correto */
     if (p->type == ACK_TYPE) {
-        printf("WAIT_RESPONSE: ACK SEQ %d OK\n", p->seq);
+        //printf("WAIT_RESPONSE: ACK SEQ %d OK\n", p->seq);
         kermit_free(p);
         return ACK_TYPE;
     }
@@ -101,8 +101,8 @@ int send_buffer(int socket, const unsigned char *data, size_t size,
     /* Calcula o número de pacotes necessários */
     size_t totalPacotes = (size + MAX_DADOS - 1) / MAX_DADOS;
 
-    printf("SEND_BUFFER: %zu bytes → %zu pacote(s) de ate %d bytes\n",
-           size, totalPacotes, MAX_DADOS);
+    //printf("SEND_BUFFER: %zu bytes → %zu pacote(s) de ate %d bytes\n",
+    //       size, totalPacotes, MAX_DADOS);
 
     uint8_t seq = 0;
     size_t  offset = 0;
@@ -123,8 +123,8 @@ int send_buffer(int socket, const unsigned char *data, size_t size,
             tipo = midType;
         }
 
-        printf("SEND_BUFFER: pacote %zu/%zu seq=%d tipo=%d tam=%d offset=%zu\n",
-               i + 1, totalPacotes, seq, tipo, tamPkt, offset);
+        //printf("SEND_BUFFER: pacote %zu/%zu seq=%d tipo=%d tam=%d offset=%zu\n",
+        //       i + 1, totalPacotes, seq, tipo, tamPkt, offset);
 
         /*
          * O cast de `const unsigned char *` para `unsigned char *` é necessário
@@ -141,7 +141,7 @@ int send_buffer(int socket, const unsigned char *data, size_t size,
         seq     = (seq + 1) % SEQ_MODULO;
     }
 
-    printf("SEND_BUFFER: transferencia concluida (%zu bytes)\n", size);
+    //printf("SEND_BUFFER: transferencia concluida (%zu bytes)\n", size);
     return 1;
 }
 
@@ -177,8 +177,8 @@ int receive_buffer(int socket, unsigned char *out_buf,
 
         /* ── Timeout ── */
         if (tamanhoCapturado == -1) {
-            printf("RECEIVE_BUFFER: TIMEOUT seq esperada=%d (%d/%d)\n",
-                   counter, timeoutCount + 1, MAX_TIMEOUTS_SEGUIDOS);
+            //printf("RECEIVE_BUFFER: TIMEOUT seq esperada=%d (%d/%d)\n",
+            //       counter, timeoutCount + 1, MAX_TIMEOUTS_SEGUIDOS);
 
             timeoutCount++;
             if (timeoutCount >= MAX_TIMEOUTS_SEGUIDOS) {
@@ -204,12 +204,12 @@ int receive_buffer(int socket, unsigned char *out_buf,
 
             if (p->seq == seqAnterior) {
                 /* Remetente não recebeu o ACK anterior → reenvia */
-                printf("RECEIVE_BUFFER: ACK PERDIDO detectado, reenviando ACK seq=%d\n",
-                       p->seq);
+                //printf("RECEIVE_BUFFER: ACK PERDIDO detectado, reenviando ACK seq=%d\n",
+                //       p->seq);
                 sendMsg(socket, 0, p->seq, ACK_TYPE, NULL);
             } else {
-                printf("RECEIVE_BUFFER: seq FORA DE ORDEM recebida=%d esperada=%d\n",
-                       p->seq, counter);
+                //printf("RECEIVE_BUFFER: seq FORA DE ORDEM recebida=%d esperada=%d\n",
+                //       p->seq, counter);
                 sendMsg(socket, 0, counter, NACK_TYPE, NULL);
             }
 
@@ -236,8 +236,8 @@ int receive_buffer(int socket, unsigned char *out_buf,
 
         /* Envia ACK */
         sendMsg(socket, 0, counter, ACK_TYPE, NULL);
-        printf("RECEIVE_BUFFER: pacote seq=%d tipo=%d tam=%d total_acumulado=%zu\n",
-               counter, p->type, p->tamDados, *out_size);
+        //printf("RECEIVE_BUFFER: pacote seq=%d tipo=%d tam=%d total_acumulado=%zu\n",
+        //       counter, p->type, p->tamDados, *out_size);
 
         auxType = p->type;
         counter = (counter + 1) % SEQ_MODULO;
@@ -246,7 +246,7 @@ int receive_buffer(int socket, unsigned char *out_buf,
 
     } while (auxType != FINAL_TYPE);
 
-    printf("RECEIVE_BUFFER: transferencia concluida (%zu bytes)\n", *out_size);
+    //printf("RECEIVE_BUFFER: transferencia concluida (%zu bytes)\n", *out_size);
     return 1;
 }
 

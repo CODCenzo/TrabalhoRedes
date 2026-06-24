@@ -1,5 +1,19 @@
-all:
-	gcc -Wall server_main.c ../Control/*.c -o exe_server
+CC = gcc
+CFLAGS = -Wall -I../../Headers
+LIBS = -lncurses
+
+TARGET = exe_server
+
+SRC = main.c ../Game/game.c ../Game/draw.c ../Game/aux_game.c
+OBJ = $(SRC:.c=.o)
+
+all: $(TARGET)
+
+$(TARGET): $(OBJ)
+	$(CC) $(CFLAGS) $(OBJ) -o $(TARGET) $(LIBS)
+
+%.o: %.c
+	$(CC) $(CFLAGS) -c $< -o $@
 
 clean:
-	rm exe_server
+	rm -f $(TARGET) $(OBJ)

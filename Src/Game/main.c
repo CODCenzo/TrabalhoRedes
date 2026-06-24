@@ -1,6 +1,6 @@
-#include "game.h"
-#include "client.h"
-#include "draw.h"
+#include "../../Headers/game.h"
+#include "../../Headers/client.h"
+#include "../../Headers/draw.h"
 #include "../../Headers/socket.h"
 #include "../../Headers/game_protocol.h"
 #include "../../Headers/protocol.h"
@@ -13,22 +13,19 @@ int main(int argc, char **argv) {
   Game *g;
   const char *maze_file = argc > 2 ? argv[2] : NULL;
   
-  //const char *prize_files[PRIZES] = {"1.txt", "2.txt", "3.jpg",
-  //                                   "4.jpg", "5.mp4", "6.mp4"};
-
   char matrix[MAZE_SIZE][MAZE_SIZE + 1]; 
 
   g = init_game();
 
   //srand((unsigned int)time(NULL));
   srand(300);
-  initscr();
-  raw();
-  noecho();
-  curs_set(0);
-  keypad(stdscr, TRUE);
-  timeout(-1);
-  init_colors();
+  // initscr();
+  // raw();
+  // noecho();
+  // curs_set(0);
+  // keypad(stdscr, TRUE);
+  // timeout(-1);
+  // init_colors();
   load_level(g, maze_file);
 
   int socket = cria_raw_socket(argv[1]) ;
@@ -39,27 +36,29 @@ int main(int argc, char **argv) {
   
   while (running) {
 
-    draw_game(g);
+    //draw_game(g);
     /* manda matrixpara o client desenhar*/
-    draw_game_client(matrix);
+
+    build_client_matrix(g, matrix);
+    // draw_game_client(matrix);
     send_matrix(socket, matrix) ;
   
 
     if (result < 0) {
 
-      show_end_screen("FIM DE JOGO");
+      // show_end_screen("FIM DE JOGO");
       /*mensagem para o client*/
-      send_end_screen(socket) ;
+      //send_end_screen(socket) ;
     }
     else if (result > 0) {
-      show_end_screen("VOCE VENCEU!");
+      // show_end_screen("VOCE VENCEU!");
       /*mensagem para o client*/
-      send_end_screen(socket) ;
+      //send_end_screen(socket) ;
     }
 
-    aux = server_checa_pacote(socket) ;
+    //aux = server_checa_pacote(socket) ;
 
-    if (aux == MOVE_UP_TYPE) {
+    /*if (aux == MOVE_UP_TYPE) {
       ch = 'w';
     }
     else if (aux == MOVE_DOWN_TYPE) {
@@ -78,9 +77,9 @@ int main(int argc, char **argv) {
       ch = 'r';
     }
 
-    /*Pegar tecla do client*/
+    /Pegar tecla do client/
     //ch = getch();
-
+         
     if (ch == 'q' || ch == 'Q') {
       running = false;
     } 
@@ -90,10 +89,12 @@ int main(int argc, char **argv) {
     } 
     else if (result == 0) {
       result = play_round(g, ch);
-    }
+    }*/ 
+
+    running = false;
   }
 
-  endwin();
+  // endwin();
   free_game(g) ;
   close(socket) ;
 

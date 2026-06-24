@@ -257,11 +257,11 @@ int sendMsg (int socket, uint8_t tamDados, uint8_t sequencia, uint8_t tipo, unsi
 		return -1;
 	}
 
-	printf("-------------------------------\n");
-	printf("ENVIANDO FRAME TAM_ORIGINAL: %d TAM_STUFFED: %d SEQ: %x TIPO: %x\n",
-           tamFrameCompleto, tamStuffed, sequencia, tipo);
+	//printf("-------------------------------\n");
+	//printf("ENVIANDO FRAME TAM_ORIGINAL: %d TAM_STUFFED: %d SEQ: %x TIPO: %x\n",
+    //       tamFrameCompleto, tamStuffed, sequencia, tipo);
 
-	imprimeFrame(frameStuffed, tamStuffed);
+	//imprimeFrame(frameStuffed, tamStuffed);
 
 	if (send(socket, frameStuffed, tamStuffed, 0) == -1) {
 		perror("ERRO AO ENVIAR FRAME\n");
@@ -270,8 +270,8 @@ int sendMsg (int socket, uint8_t tamDados, uint8_t sequencia, uint8_t tipo, unsi
 		return -1;
 	}
 
-	printf("FRAME ENVIADO COM SUCESSO\n");
-	printf("-------------------------------\n");
+	//printf("FRAME ENVIADO COM SUCESSO\n");
+	//printf("-------------------------------\n");
 	
 	free(frameCompleto);
 	free(frameStuffed);
