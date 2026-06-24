@@ -401,13 +401,6 @@ int main(int argc, char *argv[]) {
     const char *interface = argv[1];
     const char *arq_mapa  = (argc >= 3) ? argv[2] : NULL;
 
-    printf("╔══════════════════════════════════════════╗\n");
-    printf("║      PACMAN NO ESCURO — SERVIDOR         ║\n");
-    printf("╠══════════════════════════════════════════╣\n");
-    printf("║  Interface : %-28s║\n", interface);
-    printf("║  Labirinto : %-28s║\n", arq_mapa ? arq_mapa : "padrão (UFPR)");
-    printf("╚══════════════════════════════════════════╝\n\n");
-
     /* ── Cria o raw socket ── */
     int sock = cria_raw_socket((char *)interface);
     if (sock < 0) {
@@ -443,6 +436,7 @@ int main(int argc, char *argv[]) {
     loop_jogo(sock, g);
 
     free_game(g);
+    
     close(sock);
     printf("\nSERVER: encerrado.\n");
     return EXIT_SUCCESS;

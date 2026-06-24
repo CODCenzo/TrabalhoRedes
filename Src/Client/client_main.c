@@ -361,7 +361,6 @@ int main(int argc, char *argv[]) {
 
     const char *interface = argv[1];
 
-    /* ── Cria o raw socket ── */
     int sock = cria_raw_socket((char *)interface);
     if (sock < 0) {
         fprintf(stderr, "CLIENT: falha ao criar socket em %s\n", interface);
