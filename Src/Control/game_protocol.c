@@ -51,7 +51,7 @@ void imprimir_tabuleiro_jogo(uint8_t tabuleiro[40][40]) {
         for (int j = 0; j < 40; j++) {
             // "%3d" garante que cada elemento ocupe exatamente 3 espaços,
             // mantendo as colunas perfeitamente alinhadas no terminal.
-            printf("%3d", tabuleiro[i][j]);
+            printf("%c", tabuleiro[i][j]);
         }
         // Quebra de linha ao fim de cada linha da matriz
         printf("\n");
@@ -59,3 +59,24 @@ void imprimir_tabuleiro_jogo(uint8_t tabuleiro[40][40]) {
     
     printf("---------------------------------\n\n");
 }
+
+/**
+ * Envia uma mensagem de movimento do cliente para o servidor.
+ * Parâmetro 'tipo_movimento' deve ser: MOVE_UP_TYPE, MOVE_DOWN_TYPE, MOVE_LEFT_TYPE ou MOVE_RIGHT_TYPE.
+ * * Retorna 1 em caso de sucesso (ACK recebido), ou -1 em caso de erro/timeout.
+ */
+// int cliente_enviar_movimento(int socket, uint8_t tipo_movimento) {
+//     printf("[CLIENT] Enviando comando de movimento (Tipo: %d, Seq: %d)...\n", tipo_movimento, *sequencia_atual);
+
+//     // Enviamos um pacote com 0 bytes de dados, pois o próprio TYPE já indica a direção.
+//     // O send_packet_with_retry cuidará de reenviar caso o pacote ou o ACK se perca.
+//     int status = send_packet_with_retry(socket, 0, *sequencia_atual, tipo_movimento, NULL);
+
+//     if (status == 1) {
+//         printf("[CLIENT] Movimento confirmado pelo servidor!\n");
+//         return 1;
+//     } else {
+//         fprintf(stderr, "[CLIENT] ERRO: Falha ao enviar movimento (timeout/retransmissões esgotadas).\n");
+//         return -1;
+//     }
+// }
