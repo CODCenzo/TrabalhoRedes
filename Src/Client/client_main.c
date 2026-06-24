@@ -34,6 +34,10 @@ int main(int argc, char *argv[]) {
         printf("CLIENT: Tabuleiro recebido e pronto para uso!\n");
     }
 
+    
+
+
+
     close(sock);
     return EXIT_SUCCESS;
 }

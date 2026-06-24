@@ -43,3 +43,19 @@ int receber_tabuleiro_jogo(int socket, uint8_t tabuleiro_destino[40][40]) {
         return -1;
     }
 }
+
+void imprimir_tabuleiro_jogo(uint8_t tabuleiro[40][40]) {
+    printf("\n--- TABULEIRO DO JOGO (40x40) ---\n");
+    
+    for (int i = 0; i < 40; i++) {
+        for (int j = 0; j < 40; j++) {
+            // "%3d" garante que cada elemento ocupe exatamente 3 espaços,
+            // mantendo as colunas perfeitamente alinhadas no terminal.
+            printf("%3d", tabuleiro[i][j]);
+        }
+        // Quebra de linha ao fim de cada linha da matriz
+        printf("\n");
+    }
+    
+    printf("---------------------------------\n\n");
+}
