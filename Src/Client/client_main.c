@@ -28,6 +28,7 @@ int main(int argc, char *argv[]) {
     }
 
     // uint8_t m[40][40]; 
+    // memset(m, 0, sizeof(m));
 
     // // Agora m passa o endereço do bloco contínuo perfeitamente
     // if (receber_tabuleiro_jogo(sock, m) == 1) {
@@ -36,10 +37,8 @@ int main(int argc, char *argv[]) {
 
     // imprimir_tabuleiro_jogo(m);
 
-    if (cliente_enviar_movimento(sock, MOVE_RIGHT_TYPE) == 1) {
+    if (servidor_envia_game_show(sock, SHOW_TYPE) == 1) {
         printf("MOVIMENTO ENVIADO COM SUCESSO\n");
-
-        ///////testaeastasttee
     }
 
     close(sock);

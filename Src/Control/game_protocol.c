@@ -133,3 +133,66 @@ int servidor_receber_movimento(int socket, uint8_t *tipo_movimento_recebido) {
     kermit_free(p);
     return -1;
 }
+
+int servidor_envia_game_show (int socket, uint8_t tipo_msg) {
+    printf("[SERVIDOR] Enviando comando de movimento (Tipo: %d)...\n", tipo_msg);
+
+    // Enviamos um pacote com 0 bytes de dados, pois o próprio TYPE já indica a direção.
+    // O send_packet_with_retry cuidará de reenviar caso o pacote ou o ACK se perca.
+    int status = send_packet_with_retry(socket, 0, 0, tipo_msg, NULL);
+
+    if (status == 1) {
+        printf("[SERVIDOR] Mensagem enviada pelo servidor!\n");
+        return 1;
+    } else {
+        fprintf(stderr, "[SERVIDOR] ERRO: Falha ao enviar game show (timeout/retransmissões esgotadas).\n");
+        return -1;
+    }
+}
+
+int client_receber_game_show (int socket, uint8_t *tipo_msg) {
+    unsigned char buffer_captura[MAX_FRAME_SIZE];
+    
+    // Aguarda uma mensagem da rede com o timeout padrão (ex: 300ms)
+    int bytes_lidos = recebe_mensagem(socket, DEFAULT_TIMEOUT_MS, buffer_captura, MAX_FRAME_SIZE);
+
+    if (bytes_lidos == -1) {
+        // Timeout normal da rede, nenhum comando foi enviado nessa janela de tempo
+        return 0; 
+    }
+
+    // Transforma o buffer capturado na estrutura Kermit
+    struct kermit *p = parsing_kermit(buffer_captura, bytes_lidos);
+    if (p == NULL) {
+        fprintf(stderr, "[CLIENT] Falha no parsing do pacote de show recebido.\n");
+        return -1;
+    }
+
+    // Verifica se o número de sequência bate com o esperado
+    if (p->seq != 0) {
+        printf("[CLIENT] Pacote descartado: Sequência errada (Recebida: %d, Esperada: 0)\n", p->seq);
+        // Envia um NACK ou ACK antigo dependendo da sua regra de controle de fluxo
+        sendMsg(socket, 0, p->seq, NACK_TYPE, NULL);
+        kermit_free(p);
+        return -1;
+    }
+
+    // Verifica se o pacote é de fato um comando de movimento do personagem
+    if (p->type == SHOW_TYPE) {
+        
+        printf("[CLIENT] Comando de show recebido com sucesso (Tipo: %d, Seq: %d)!\n", p->type, p->seq);
+        
+        // Guarda o tipo do movimento na variável de saída para o jogo processar
+        *tipo_msg = p->type;
+
+        // Envia o ACK confirmando para o cliente que a jogada foi aceita
+        sendMsg(socket, 0, 0, ACK_TYPE, NULL);
+
+        kermit_free(p);
+        return 1; // Sucesso
+    }
+
+    // Caso receba outro tipo de pacote inesperado
+    kermit_free(p);
+    return -1;
+}

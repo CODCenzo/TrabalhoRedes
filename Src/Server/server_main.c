@@ -53,8 +53,8 @@ int main(int argc, char *argv[]) {
 
     // enviar_tabuleiro_jogo(sock, g->maze);
 
-    uint8_t *movimentoRecebido;
-   if (servidor_receber_movimento(sock, movimentoRecebido) == 1) {
+    uint8_t *tipoMsg;
+   if (client_receber_game_show(sock, tipoMsg) == 1) {
     printf("MOVIMENTO RECEBIDO COM SUCESSO\n");
    }  
 
