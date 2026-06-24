@@ -1,4 +1,5 @@
 #include "../../Headers/game.h"
+#include "../../Headers/default.h"
 
 void place_objects(Game *g, bool has_pacman, 
                    int has_ghosts[GHOSTS], int has_prizes[PRIZES]) {

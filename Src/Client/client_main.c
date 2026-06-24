@@ -90,14 +90,16 @@ int main(int argc, char *argv[]) {
     // Agora m passa o endereço do bloco contínuo perfeitamente
     if (receber_tabuleiro_jogo(sock, m) == 1) {
         printf("CLIENT: Tabuleiro recebido e pronto para uso!\n");
-        desenhar_tabuleiro_ncurses(m);
+        //desenhar_tabuleiro_ncurses(m);
+        imprimir_tabuleiro_jogo(m);
     } else {
         close(sock);
         return EXIT_FAILURE;
     }
 
-    if (servidor_envia_game_show(sock, SHOW_TYPE) == 1) {
-        printf("MOVIMENTO ENVIADO COM SUCESSO\n");
+    uint8_t tipoMsg ;
+    if (client_receber_game_show(sock, &tipoMsg) == 1) {
+        printf("GAME SHOW ENVIADO COM SUCESSO\n");
     }
 
     close(sock);

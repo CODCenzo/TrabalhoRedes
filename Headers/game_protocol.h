@@ -8,7 +8,7 @@
 #include "kermit.h"
 #include "protocol.h"
 
-int enviar_tabuleiro_jogo(int socket, uint8_t tabuleiro[40][40]);
+int enviar_tabuleiro_jogo(int socket, char **tabuleiro);
 
 int receber_tabuleiro_jogo(int socket, uint8_t tabuleiro_destino[40][40]);
 
