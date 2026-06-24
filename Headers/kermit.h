@@ -17,7 +17,7 @@
 #define MAX_FRAME_SIZE 35 // 4 bytes campos + 31 bytes de dados
 #define MIN_FRAME_SIZE 14 // 4 bytes campos + 10 bytes de dados ou padding
 
-#define MAX_TENTATIVAS_ENVIO 25
+#define MAX_TENTATIVAS_ENVIO 50
 
 #define MAX_DADOS 31
 #define MIN_DADOS 10
@@ -32,8 +32,6 @@
 #define MOVE_LEFT_TYPE 11
 
 #define DEFAULT_CRC 1
-
-#define DEFAULT_MSG_SIZE 10
 
 int cria_raw_socket(char* nome_interface_rede);
 
