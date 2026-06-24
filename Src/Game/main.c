@@ -1,9 +1,9 @@
 #include "../../Headers/game.h"
 #include "../../Headers/client.h"
 #include "../../Headers/draw.h"
-#include "../../Headers/socket.h"
 #include "../../Headers/game_protocol.h"
 #include "../../Headers/protocol.h"
+#include "../../Headers/kermit.h"
 
 int main(int argc, char **argv) {
   int aux;
@@ -39,9 +39,9 @@ int main(int argc, char **argv) {
     //draw_game(g);
     /* manda matrixpara o client desenhar*/
 
-    build_client_matrix(g, matrix);
+    //build_client_matrix(g, matrix);
     // draw_game_client(matrix);
-    send_matrix(socket, matrix) ;
+    //send_matrix(socket, matrix) ;
   
 
     if (result < 0) {
@@ -56,9 +56,9 @@ int main(int argc, char **argv) {
       //send_end_screen(socket) ;
     }
 
-    //aux = server_checa_pacote(socket) ;
+    aux = server_checa_pacote(socket) ;
 
-    /*if (aux == MOVE_UP_TYPE) {
+    if (aux == MOVE_UP_TYPE) {
       ch = 'w';
     }
     else if (aux == MOVE_DOWN_TYPE) {
@@ -76,11 +76,12 @@ int main(int argc, char **argv) {
     else if (aux == RESTART_TYPE) {
       ch = 'r';
     }
+    printf("Checked key: %c\n", ch);
 
-    /Pegar tecla do client/
+    //Pegar tecla do client/
     //ch = getch();
          
-    if (ch == 'q' || ch == 'Q') {
+    /*if (ch == 'q' || ch == 'Q') {
       running = false;
     } 
     else if (ch == 'r' || ch == 'R') {

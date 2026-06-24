@@ -29,15 +29,16 @@
 #define TXT_TYPE 5
 #define JPG_TYPE 6
 #define MP4_TYPE 7
-#define RESTART_TYPE 8
+#define QUIT_TYPE 8
 #define INITIAL_FILE_TYPE 9
 #define MOVE_RIGHT_TYPE 10
 #define MOVE_LEFT_TYPE 11
 #define MOVE_UP_TYPE 12
 #define MOVE_DOWN_TYPE 13
-#define QUIT_TYPE 14
+#define RESTART_TYPE 14
 #define ERROR_TYPE 15
 #define FINAL_TYPE 16
+
 
 #define DEFAULT_CRC 1
 
@@ -52,6 +53,8 @@ struct kermit {
   unsigned char *dados ;
   uint8_t crc ; // 8 bits
 } ;
+
+int cria_raw_socket(char *nome_interface_rede);
 
 void print_kermit(struct kermit *k);
 

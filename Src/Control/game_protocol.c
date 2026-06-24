@@ -70,11 +70,11 @@ int receive_matrix(int socket, char m[MAZE_SIZE][MAZE_SIZE + 1]) {
 /*funcao que manda tecla*/
 int send_key(int socket, char key) {
 
-  unsigned char *buf ;
-  uint32_t size = sizeof(int) ;
+  //unsigned char *buf ;
+  //uint32_t size = sizeof(int) ;
   uint8_t key_type;
 
-  buf = (unsigned char *)&key ;
+  //buf = (unsigned char *)&key ;
 
   if (socket < 0) {
     fprintf(stderr, "SEND_KEY: parametro invalido\n");
@@ -104,7 +104,7 @@ int send_key(int socket, char key) {
     return -1;
   }
 
-  int ret = send_buffer(socket, buf, size, (uint8_t)key_type, (uint8_t)key_type);
+  int ret = send_packet_with_retry(socket, 0, 0, key_type, NULL);
   printf("SEND_KEY: enviado %d\n", ret);
 
   return ret;
@@ -260,6 +260,8 @@ int client_loop(int socket) {
       receive_matrix(socket, matrix) ;
       draw_game_client(matrix) ;
       printf("CLIENT_LOOP: recebido DATA_TYPE\n");
+      printf("CLIENT_LOOP: direcao\n");
+      send_key(socket, 'w') ;
       break;
     
     default:

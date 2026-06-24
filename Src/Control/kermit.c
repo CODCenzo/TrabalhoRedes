@@ -1,5 +1,43 @@
 #include "../../Headers/kermit.h" 
 
+int cria_raw_socket(char* nome_interface_rede) {
+  // AF_PACKET = Acesso direto ao nível de pacote da interface de rede
+  // SOCK_RAW = O kernel para de processar cabeçalhos
+  // htons(host to network) = captura todos os protocolos e gatante endianess
+  int soquete = socket(AF_PACKET, SOCK_RAW, htons(ETH_P_ALL));
+  if (soquete == -1) {
+    fprintf(stderr, "Erro ao criar socket: Verifique se você é root!\n");
+    exit(-1);
+  }
+
+  int ifindex = if_nametoindex(nome_interface_rede);
+
+  // Conecta o socket a interface física
+  struct sockaddr_ll endereco = {0};
+  endereco.sll_family = AF_PACKET;
+  endereco.sll_protocol = htons(ETH_P_ALL);
+  endereco.sll_ifindex = ifindex;
+
+  // Inicializa socket
+  if (bind(soquete, (struct sockaddr*) &endereco, sizeof(endereco)) == -1) {
+    fprintf(stderr, "Erro ao fazer bind no socket\n");
+    exit(-1);
+  }
+
+  // Modo promíscuo "Aceite tudo o que passar pelo cabo, mesmo que não seja para o meu endereço MAC".
+  struct packet_mreq mr = {0};
+  mr.mr_ifindex = ifindex;
+  mr.mr_type = PACKET_MR_PROMISC;
+  // Não joga fora o que identifica como lixo: Modo promíscuo
+  if (setsockopt(soquete, SOL_PACKET, PACKET_ADD_MEMBERSHIP, &mr, sizeof(mr)) == -1) {
+    fprintf(stderr, "Erro ao fazer setsockopt: "
+      "Verifique se a interface de rede foi especificada corretamente.\n");
+    exit(-1);
+  }
+ 
+  return soquete;
+}
+
 void print_kermit(struct kermit *k) {
   printf("===============================\n") ;
   printf("tamDados: %u\n", (unsigned int) k->tamDados) ;
@@ -30,81 +68,7 @@ void kermit_free(struct kermit *k) {
 	}
 	free(k);
 	k = NULL;
-}
-
-/*
- * Aplica byte stuffing no buffer src, escrevendo o resultado em dst.
- *
- * Regra: após cada byte 0x88 ou 0x81, insere um byte 0xFF.
- * O byte marcador de início (0x7E, sempre em src[0]) é copiado sem stuffing —
- * ele nunca terá 0x88 ou 0x81, mas mais importante, o stuffing não deve
- * alterar a posição do marcador que o receptor usa para identificar o frame.
- *
- * Retorna o tamanho do buffer após o stuffing.
- * dst deve ter capacidade para até 2 * tamSrc bytes (pior caso: todos os bytes
- * precisam de stuffing).
- */
-static int stuffing(const unsigned char *src, int tamSrc,
-                    unsigned char *dst, int tamDst) {
-	int j = 0;
-
-	for (int i = 0; i < tamSrc; i++) {
-		if (j >= tamDst) {
-			fprintf(stderr, "STUFFING: buffer de destino cheio\n");
-			return -1;
-		}
-
-		dst[j++] = src[i];
-
-		/* Insere 0xFF após 0x88 ou 0x81, exceto no marcador inicial (i == 0) */
-		if (i > 0 && (src[i] == 0x88 || src[i] == 0x81)) {
-			if (j >= tamDst) {
-				fprintf(stderr, "STUFFING: buffer de destino cheio (escape)\n");
-				return -1;
-			}
-			dst[j++] = 0xFF;
-		}
-	}
-
-	return j;
-}					
-
-/*
- * Remove os bytes de stuffing de src, escrevendo o resultado em dst.
- *
- * Regra: um byte 0xFF que segue imediatamente um 0x88 ou 0x81 é removido.
- * O 0xFF só é escape se vier imediatamente após 0x88 ou 0x81 — caso contrário
- * é dado legítimo e é copiado normalmente.
- *
- * Retorna o tamanho do buffer após o destuffing.
- */
-static int destuffing(const unsigned char *src, int tamSrc,
-                      unsigned char *dst, int tamDst) {
-	int j = 0;
-	int skip_next = 0;  /* flag: próximo byte é escape, descartar */
-
-	for (int i = 0; i < tamSrc; i++) {
-		if (j >= tamDst) {
-			fprintf(stderr, "DESTUFFING: buffer de destino cheio\n");
-			return -1;
-		}
-
-		if (skip_next && src[i] == 0xFF) {
-			skip_next = 0;  /* descarta o 0xFF de escape */
-			continue;
-		}
-
-		skip_next = 0;
-		dst[j++] = src[i];
-
-		/* Próximo byte será escape se este for 0x88 ou 0x81 */
-		if (src[i] == 0x88 || src[i] == 0x81) {
-			skip_next = 1;
-			}
-	}
-
-	return j;
-}
+}		
 
 // Calcula o CRC dos campos TAM/SEQ/TIPO/DADOS
 // Utiliza PG=0x07
@@ -128,7 +92,7 @@ uint8_t calculaCRC8(const unsigned char *data, int tamData) {
 }
 
 
-// Aloca e preenche o frame com seguindo o protocolo.
+// Aloca e preenche o frame seguindo o protocolo.
 // Caso o tamDados seja < 10 colocamos padding no final do frame para que o tamanho mínimo
 // do frame seja 14 e máximo seja 35.
 // Retorna um ponteiro para um buffer contendo o frame.
@@ -240,41 +204,22 @@ int sendMsg (int socket, uint8_t tamDados, uint8_t sequencia, uint8_t tipo, unsi
 	if (tamDados < 10) { padding = 10;}
 	unsigned int tamFrameCompleto = tamDados + 4 + padding;
 
-	// Adiciona o stuffing
-	int tamStuffMax = tamFrameCompleto * 2;
-	unsigned char *frameStuffed = malloc(tamStuffMax);
-	if (!frameStuffed) {
-		perror("ERRO AO ALOCAR BUFFER DE STUFFING\n");
-		free(frameCompleto);
-		return -1;
-	}
+	printf("-------------------------------\n");
+	printf("ENVIANDO FRAME TAM: %d  SEQ: %d TIPO: %d\n",
+           tamFrameCompleto, sequencia, tipo);
 
-	int tamStuffed = stuffing(frameCompleto, tamFrameCompleto,frameStuffed, tamStuffMax);
-	if (tamStuffed == -1) {
-		fprintf(stderr, "ERRO NO STUFFING\n");
-		free(frameCompleto);
-		free(frameStuffed);
-		return -1;
-	}
+	imprimeFrame(frameCompleto, tamFrameCompleto);
 
-	//printf("-------------------------------\n");
-	//printf("ENVIANDO FRAME TAM_ORIGINAL: %d TAM_STUFFED: %d SEQ: %x TIPO: %x\n",
-    //       tamFrameCompleto, tamStuffed, sequencia, tipo);
-
-	//imprimeFrame(frameStuffed, tamStuffed);
-
-	if (send(socket, frameStuffed, tamStuffed, 0) == -1) {
+	if (send(socket, frameCompleto, tamFrameCompleto, 0) == -1) {
 		perror("ERRO AO ENVIAR FRAME\n");
 		free(frameCompleto);
-		free(frameStuffed);
 		return -1;
 	}
 
-	//printf("FRAME ENVIADO COM SUCESSO\n");
-	//printf("-------------------------------\n");
+	printf("FRAME ENVIADO COM SUCESSO\n");
+	printf("-------------------------------\n");
 	
 	free(frameCompleto);
-	free(frameStuffed);
 
   return 1;
 }
@@ -295,7 +240,7 @@ int protocolo_e_valido(unsigned char* buffer, int tamanho_buffer) {
 		return 0; 
 	}
 
-	if (buffer[0] == MI) { // Verifica marcador inícial
+	if (buffer[0] == MI) {
 
 		uint8_t tamDados = buffer[1] >> 3;
 		if (tamanho_buffer < (tamDados + 4)) {return 0;}
@@ -304,7 +249,7 @@ int protocolo_e_valido(unsigned char* buffer, int tamanho_buffer) {
 		uint8_t crcCalculado = calculaCRC8(buffer + 1, tamDados + 2);
 
 		if (crcRecebido != crcCalculado) { 
-			printf("PACOTE CORROMPIDO | CRC RECEBIDO: %x | CRC CALCULADO %x", crcRecebido, crcCalculado);
+			printf("PACOTE CORROMPIDO | CRC RECEBIDO: %u | CRC CALCULADO %u\n", crcRecebido, crcCalculado);
 			return 0;
 		}
 
@@ -326,18 +271,12 @@ int recebe_mensagem(int soquete, int timeoutMillis, unsigned char* buffer, int t
 
 	setsockopt(soquete, SOL_SOCKET, SO_RCVTIMEO, (char*) &timeout, sizeof(timeout));
 
-	unsigned char stuffedBuffer[MAX_FRAME_SIZE * 2];
-	int bytes_lidos;
-
 	do {
-		bytes_lidos = recv(soquete, stuffedBuffer, sizeof(stuffedBuffer), 0);
+		int bytes_lidos = recv(soquete, buffer, tamanho_buffer, 0);
 		if (bytes_lidos <= 0) {continue;}
 
-		int tamDestuffed = destuffing(stuffedBuffer, bytes_lidos, buffer, tamanho_buffer);
-
-		if (tamDestuffed > 0 && protocolo_e_valido(buffer, tamDestuffed)) { return tamDestuffed; }
+		if (protocolo_e_valido(buffer, bytes_lidos)) { return bytes_lidos; }
 	} while (timestamp() - comeco <= timeoutMillis);
 
 	return -1;
 }
-

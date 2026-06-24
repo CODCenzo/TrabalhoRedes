@@ -5,7 +5,7 @@ LIBS = -lncurses
 TARGET = main
 
 GAME_SRC = main.c game.c draw.c aux_game.c client.c
-CONTROL_SRC = ../Control/game_protocol.c ../Control/protocol.c ../Control/kermit.c ../Control/socket.c
+CONTROL_SRC = ../Control/game_protocol.c ../Control/protocol.c ../Control/kermit.c
 SRC = $(GAME_SRC) $(CONTROL_SRC)
 OBJ = $(SRC:.c=.o)
 
@@ -18,4 +18,4 @@ $(TARGET): $(OBJ)
 	$(CC) $(CFLAGS) -c $< -o $@
 
 clean:
-	rm -f $(TARGET) $(OBJ)
+	rm -f $(TARGET) $(OBJ) ../Control/socket.o
