@@ -34,7 +34,6 @@ int receber_tabuleiro_jogo(int socket, uint8_t tabuleiro_destino[40][40]) {
         status = receive_buffer(socket, (unsigned char *)tabuleiro_destino[i], capacidade_maxima, &total_bytes_recebidos);
 
         if (status == 1) {
-        // Validação extra de segurança: conferir se o tamanho recebido bate com a matriz
         if (total_bytes_recebidos == capacidade_maxima) {
 
             } else {
@@ -127,8 +126,6 @@ int servidor_receber_movimento(int socket, uint8_t *tipo_movimento_recebido) {
 
         // Envia o ACK confirmando para o cliente que a jogada foi aceita
         sendMsg(socket, 0, p->seq, ACK_TYPE, NULL);
-
-        // Incrementa a máquina de estados da sequência
 
         kermit_free(p);
         return 1; // Sucesso

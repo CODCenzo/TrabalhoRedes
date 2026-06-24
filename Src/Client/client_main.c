@@ -43,7 +43,6 @@ int main(int argc, char *argv[]) {
 
   char input;
   do {
-    // Captura a entrada do usuário (ajuste caso getch() dependa de inicialização específica)
     scanf("%c", &input);
     int moveu = 0;
 
@@ -52,7 +51,6 @@ int main(int argc, char *argv[]) {
         moveu = cliente_enviar_movimento(sock, MOVE_UP_TYPE);
         break;
       case 'a':
-        // CORRIGIDO: Era MOVE_DOWN_TYPE no seu código original
         moveu = cliente_enviar_movimento(sock, MOVE_LEFT_TYPE); 
         break;
       case 's':

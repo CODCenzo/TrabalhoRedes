@@ -22,7 +22,6 @@ int main(int argc, char *argv[]) {
 
   const char *interface = argv[1];
 
-  /* ── Cria o raw socket ── */
   int sock = cria_raw_socket((char *)interface);
   if (sock < 0) {
     fprintf(stderr, "SERVER: falha ao criar socket em %s\n", interface);
@@ -52,10 +51,6 @@ int main(int argc, char *argv[]) {
     if (resultado == 1) {
       printf("SERVER: Movimento detectado (Tipo: %d). Atualizando lógica do jogo...\n", tipoMsgRecebida);
             
-      /* * [INTEGRAÇÃO COM O SEU JOGO]: 
-      * Substitua a linha abaixo pela função real do seu 'game.h' que processa 
-      * as coordenadas baseada no tipoMsgRecebida (Ex: MOVE_UP_TYPE atualiza a linha do player).
-      */
       // computar_movimento_personagem(g, tipoMsgRecebida); 
 
       // 3. Envia de volta a matriz atualizada pós-jogada para o cliente renderizar
@@ -63,7 +58,6 @@ int main(int argc, char *argv[]) {
       enviar_tabuleiro_jogo(sock, g->maze);
     }
         
-    // Caso queira adicionar alguma condição de término do servidor baseada no estado do jogo:
     // if (g->player_ganhou) running = false;
   }
 
