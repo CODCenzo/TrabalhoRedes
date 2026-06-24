@@ -281,35 +281,35 @@ int sendMsg (int socket, uint8_t tamDados, uint8_t sequencia, uint8_t tipo, unsi
 	unsigned int tamFrameCompleto = tamDados + 4 + padding;
 
 	// Adiciona o stuffing
-	int tamStuffMax = tamFrameCompleto * 2;
-	unsigned char *frameStuffed = malloc(tamStuffMax);
-	if (!frameStuffed) {
-		perror("ERRO AO ALOCAR BUFFER DE STUFFING\n");
-		free(frameCompleto);
-		return -1;
-	}
+	// int tamStuffMax = tamFrameCompleto * 2;
+	// unsigned char *frameStuffed = malloc(tamStuffMax);
+	// if (!frameStuffed) {
+	// 	perror("ERRO AO ALOCAR BUFFER DE STUFFING\n");
+	// 	free(frameCompleto);
+	// 	return -1;
+	// }
 
 	// bit stuffing não esta funcionando
 	// int tamStuffed = stuffing(frameCompleto, tamFrameCompleto,frameStuffed, tamStuffMax);
 
-	int tamStuffed = tamFrameCompleto;
-	if (tamStuffed == -1) {
-		fprintf(stderr, "ERRO NO STUFFING\n");
-		free(frameCompleto);
-		free(frameStuffed);
-		return -1;
-	}
+	// int tamStuffed = tamFrameCompleto;
+	// if (tamStuffed == -1) {
+	// 	fprintf(stderr, "ERRO NO STUFFING\n");
+	// 	free(frameCompleto);
+	// 	// free(frameStuffed);
+	// 	return -1;
+	// }
 
 	printf("-------------------------------\n");
 	printf("ENVIANDO FRAME TAM_ORIGINAL: %d TAM_STUFFED: %d SEQ: %x TIPO: %x\n",
-           tamFrameCompleto, tamStuffed, sequencia, tipo);
+           tamFrameCompleto, tamFrameCompleto, sequencia, tipo);
 
-	imprimeFrame(frameStuffed, tamStuffed);
+	imprimeFrame(frameCompleto, tamFrameCompleto);
 
-	if (send(socket, frameStuffed, tamStuffed, 0) == -1) {
+	if (send(socket, frameCompleto, tamFrameCompleto, 0) == -1) {
 		perror("ERRO AO ENVIAR FRAME\n");
 		free(frameCompleto);
-		free(frameStuffed);
+		// free(frameStuffed);
 		return -1;
 	}
 
@@ -317,7 +317,7 @@ int sendMsg (int socket, uint8_t tamDados, uint8_t sequencia, uint8_t tipo, unsi
 	printf("-------------------------------\n");
 	
 	free(frameCompleto);
-	free(frameStuffed);
+	// free(frameStuffed);
 
   return 1;
 }
@@ -369,11 +369,11 @@ int recebe_mensagem(int soquete, int timeoutMillis, unsigned char* buffer, int t
 
 	setsockopt(soquete, SOL_SOCKET, SO_RCVTIMEO, (char*) &timeout, sizeof(timeout));
 
-	unsigned char stuffedBuffer[MAX_FRAME_SIZE * 2];
+	// unsigned char stuffedBuffer[MAX_FRAME_SIZE * 2];
 	int bytes_lidos;
 
 	do {
-		bytes_lidos = recv(soquete, stuffedBuffer, sizeof(stuffedBuffer), 0);
+		bytes_lidos = recv(soquete, buffer, tamanho_buffer, 0);
 		if (bytes_lidos <= 0) {continue;}
 
 		// int tamDestuffed = destuffing(stuffedBuffer, bytes_lidos, buffer, tamanho_buffer);
