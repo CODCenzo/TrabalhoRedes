@@ -34,9 +34,7 @@ int main(int argc, char *argv[]) {
         printf("CLIENT: Tabuleiro recebido e pronto para uso!\n");
     }
 
-    
-
-
+    imprimir_tabuleiro_jogo(m);
 
     close(sock);
     return EXIT_SUCCESS;
