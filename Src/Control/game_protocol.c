@@ -33,7 +33,7 @@ int receber_tabuleiro_jogo(int socket, uint8_t tabuleiro_destino[40][40]) {
 
     for (int i = 0; i < 40; i++) {
         // Faz o cast da matriz de destino para (unsigned char*) para que a função escreva direto nela
-        status = receive_buffer(socket, (unsigned char *)tabuleiro_destino, capacidade_maxima, &total_bytes_recebidos);
+        status = receive_buffer(socket, (unsigned char *)tabuleiro_destino[i], capacidade_maxima, &total_bytes_recebidos);
 
         if (status == 1) {
         // Validação extra de segurança: conferir se o tamanho recebido bate com a matriz
