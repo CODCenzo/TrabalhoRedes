@@ -12,6 +12,9 @@
 #include "../../Headers/draw.h"
 
 int main(int argc, char *argv[]) {
+
+  char **matrix = NULL ;
+
   srand((unsigned int)time(NULL));
 
   if (argc < 2) {
@@ -37,7 +40,8 @@ int main(int argc, char *argv[]) {
 
   // 1. Envia o estado inicial do labirinto assim que o cliente conecta
   printf("SERVER: Enviando tabuleiro inicial...\n");
-  enviar_tabuleiro_jogo(sock, g->maze);
+  build_client_matrix_(g, matrix);
+  enviar_tabuleiro_jogo(sock, matrix);
 
   uint8_t tipoMsgRecebida = 0;
   uint8_t seq_esperada_mov = 0; // Sincronizador de sequência do servidor
@@ -55,7 +59,8 @@ int main(int argc, char *argv[]) {
 
       // 3. Envia de volta a matriz atualizada pós-jogada para o cliente renderizar
       printf("SERVER: Enviando matriz atualizada para o cliente.\n");
-      enviar_tabuleiro_jogo(sock, g->maze);
+      build_client_matrix_(g, matrix);
+      enviar_tabuleiro_jogo(sock, matrix);
     }
         
     // if (g->player_ganhou) running = false;

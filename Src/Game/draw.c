@@ -120,3 +120,43 @@ void init_colors() {
   init_pair(6, COLOR_CYAN, -1);
   init_pair(7, COLOR_WHITE, -1);
 }
+
+void draw_client_tile(char tile, int screen_x, int screen_y) {
+
+  if (tile == ' ') {
+    mvaddch(screen_y, screen_x, ' ');
+  } 
+  else if (tile == 'X') {
+    attron(COLOR_PAIR(6) | A_BOLD);
+    mvaddch(screen_y, screen_x, ACS_CKBOARD);
+    attroff(COLOR_PAIR(6) | A_BOLD);
+  } 
+  else if (tile >= '1' && tile <= '6') {
+    attron(COLOR_PAIR(5) | A_BOLD);
+    mvaddch(screen_y, screen_x, tile);
+    attroff(COLOR_PAIR(5) | A_BOLD);
+  } 
+  else if (tile == 'R') {
+    attron(COLOR_PAIR(1) | A_BOLD);
+    mvaddch(screen_y, screen_x, tile);
+    attroff(COLOR_PAIR(1) | A_BOLD);
+  } 
+  else if (tile == 'B') {
+    attron(COLOR_PAIR(2) | A_BOLD);
+    mvaddch(screen_y, screen_x, tile);
+    attroff(COLOR_PAIR(2) | A_BOLD);
+  } 
+  else if (tile == 'G') {
+    attron(COLOR_PAIR(3) | A_BOLD);
+    mvaddch(screen_y, screen_x, tile);
+    attroff(COLOR_PAIR(3) | A_BOLD);
+  } 
+  else if (tile == 'Y' || tile == 'P') {
+    attron(COLOR_PAIR(5) | A_BOLD);
+    mvaddch(screen_y, screen_x, tile);
+    attroff(COLOR_PAIR(5) | A_BOLD);
+  } 
+  else {
+    mvaddch(screen_y, screen_x, tile);
+  }
+}

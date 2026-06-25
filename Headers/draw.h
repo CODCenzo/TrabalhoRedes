@@ -11,4 +11,6 @@ void show_end_screen(const char *title) ;
 
 void init_colors() ;
 
+void draw_client_tile(char tile, int screen_x, int screen_y) ;
+
 #endif 

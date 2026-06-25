@@ -18,4 +18,6 @@ int cliente_enviar_movimento(int socket, uint8_t tipo_movimento);
 
 int servidor_receber_movimento(int socket, uint8_t *tipo_movimento_recebido);
 
+void build_client_matrix_(Game *g, char **out) ;
+
 #endif /* GAME_PROTOCOL_H */
