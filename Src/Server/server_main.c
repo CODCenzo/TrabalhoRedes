@@ -11,9 +11,27 @@
 #include "../../Headers/game.h"
 #include "../../Headers/draw.h"
 
+
+char devolve_movimento(int tipoMsg) {
+
+  switch (tipoMsg) {
+    case MOVE_UP_TYPE:
+      return 'w';
+    case MOVE_DOWN_TYPE:
+      return 's';
+    case MOVE_LEFT_TYPE:
+      return 'a';
+    case MOVE_RIGHT_TYPE:
+      return 'd';
+  }
+
+  return '1'; // Nenhum movimento válido detectado
+}
+
 int main(int argc, char *argv[]) {
 
   char **matrix  = alloc_matrix(MAZE_SIZE, MAZE_SIZE);
+  char ch;
 
   srand((unsigned int)time(NULL));
 
@@ -44,26 +62,28 @@ int main(int argc, char *argv[]) {
   enviar_tabuleiro_jogo(sock, matrix);
 
   uint8_t tipoMsgRecebida = 0;
-  uint8_t seq_esperada_mov = 0; // Sincronizador de sequência do servidor
+  int game_state = 0; // 0 = ongoing, 1 = win, -1 = lose
 
   printf("SERVER: Pronto e aguardando jogadas do cliente...\n");
     
   // 2. Loop principal do servidor para escuta contínua de comandos
   while (running) {
     int resultado = servidor_receber_movimento(sock, &tipoMsgRecebida);
+    ch = devolve_movimento(tipoMsgRecebida);
 
     if (resultado == 1) {
       printf("SERVER: Movimento detectado (Tipo: %d). Atualizando lógica do jogo...\n", tipoMsgRecebida);
-            
-      // computar_movimento_personagem(g, tipoMsgRecebida); 
+             
+      game_state =play_round(g, ch); // Função que processa o movimento no jogo
 
       // 3. Envia de volta a matriz atualizada pós-jogada para o cliente renderizar
       printf("SERVER: Enviando matriz atualizada para o cliente.\n");
       build_client_matrix_(g, matrix);
       enviar_tabuleiro_jogo(sock, matrix);
     }
-        
-    // if (g->player_ganhou) running = false;
+    if (game_state != 0) {
+      running = false; // Sai do loop se o jogo terminou
+    }
   }
 
   close(sock);
