@@ -13,7 +13,7 @@
 
 int main(int argc, char *argv[]) {
 
-  char **matrix = NULL ;
+  char **matrix  = alloc_matrix(MAZE_SIZE, MAZE_SIZE);
 
   srand((unsigned int)time(NULL));
 
@@ -67,6 +67,8 @@ int main(int argc, char *argv[]) {
   }
 
   close(sock);
-  // free_game(g); // Se houver função de desalocação
-    return EXIT_SUCCESS;
+  free_game(g); // Se houver função de desalocação
+  free_matrix(matrix, MAZE_SIZE);
+
+  return EXIT_SUCCESS;
 }
