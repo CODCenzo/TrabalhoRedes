@@ -16,18 +16,18 @@ int wait_response(int socket, uint8_t msgSequence) {
 
     struct kermit *p = parsing_kermit(bufferDeCaptura, tamanhoCapturado);
 
-    if (p == NULL) {
+    /*if (p == NULL) {
         printf("WAIT_RESPONSE: PARSING FALHOU SEQ %d\n", msgSequence);
         return -1;
     }
 
-    /* Sequência errada – trata como NACK para forçar retransmissão */
+    // Sequência errada – trata como NACK para forçar retransmissão 
     if (p->seq != msgSequence) {
         printf("WAIT_RESPONSE: SEQ ERRADA recebida=%d esperada=%d tipo=%d\n",
                p->seq, msgSequence, p->type);
         kermit_free(p);
         return NACK_TYPE;
-    }
+    }*/
 
     /* ACK correto */
     if (p->type == ACK_TYPE) {

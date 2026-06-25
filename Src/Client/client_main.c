@@ -65,7 +65,7 @@ int main(int argc, char *argv[]) {
       default:
         break;
     }
-    sleep(1);
+    //sleep(1);
 
     // 2. Se um comando válido foi enviado, aguarda o servidor processar e devolver a matriz atualizada
     if (moveu == 1) {
@@ -76,6 +76,8 @@ int main(int argc, char *argv[]) {
     }
 
   } while (input != 'q');
+
+  show_end_screen("Fim de Jogo");
 
   close(sock);
   return EXIT_SUCCESS;

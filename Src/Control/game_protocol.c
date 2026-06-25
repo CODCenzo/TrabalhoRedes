@@ -1,5 +1,41 @@
 #include "../../Headers/game_protocol.h"
 
+void build_client_matrix_(Game *g, char **out) {
+  int x, y, i;
+
+  if (!g) {
+    perror("erro build_client_matrix\n");
+    exit(1);
+  }
+
+  for (y = 0; y < MAZE_SIZE; y++) {
+    for (x = 0; x < MAZE_SIZE; x++) {
+      if (!visible_to_pacman(g, x, y)) {
+        out[y][x] = ' ';
+      } else if (g->maze[y][x] == 'X') {
+        out[y][x] = 'X';
+      } else if (g->maze[y][x] >= '1' && g->maze[y][x] <= '6') {
+        out[y][x] = g->maze[y][x];
+      } else {
+        out[y][x] = '.';
+      }
+    }
+  }
+
+  for (i = 0; i < GHOSTS; i++) {
+    int gx = g->ghosts[i].body.x;
+    int gy = g->ghosts[i].body.y;
+
+    if (is_inside(gx, gy) && visible_to_pacman(g, gx, gy)) {
+      out[gy][gx] = g->ghosts[i].symbol;
+    }
+  }
+
+  if (is_inside(g->pacman.x, g->pacman.y)) {
+    out[g->pacman.y][g->pacman.x] = 'P';
+  }
+}
+
 int enviar_tabuleiro_jogo(int socket, char **tabuleiro) {
     int status;
 
