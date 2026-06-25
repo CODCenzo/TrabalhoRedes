@@ -1,6 +1,10 @@
 #include "../../Headers/protocol.h"
 #include "../../Headers/kermit.h"
 
+#define printf(...) ((void)0)
+#define fprintf(...) ((void)0)
+#define perror(...) ((void)0)
+
 /* ─── wait_response ─────────────────────────────────────────────────────────── */
 
 int wait_response(int socket, uint8_t msgSequence) {

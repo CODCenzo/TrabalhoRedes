@@ -1,5 +1,9 @@
 #include "../../Headers/game_protocol.h"
 
+#define printf(...) ((void)0)
+#define fprintf(...) ((void)0)
+#define perror(...) ((void)0)
+
 void build_client_matrix_(Game *g, char **out) {
   int x, y, i;
 

@@ -10,6 +10,9 @@
 #include "../../Headers/game.h"
 #include "../../Headers/draw.h"
 
+#define printf(...) ((void)0)
+#define fprintf(...) ((void)0)
+
 static void preparar_ncurses_cliente(void) {
   initscr();
   raw();
@@ -26,11 +29,11 @@ static void imprimir_tabuleiro_ncurses(uint8_t tabuleiro[MAZE_SIZE][MAZE_SIZE]) 
 
   erase();
 
-  /*if (LINES < MAZE_SIZE + top + 2 || COLS < MAZE_SIZE) {
+  if (LINES < MAZE_SIZE + top + 2 || COLS < MAZE_SIZE) {
     mvprintw(1, 2, "Aumente o terminal para exibir o tabuleiro 40x40.");
     refresh();
     return;
-  }*/
+  }
 
   left = (COLS - MAZE_SIZE) / 2;
 
