@@ -1,8 +1,8 @@
 #include "../../Headers/kermit.h" 
 
-#define printf(...) ((void)0)
+/*#define printf(...) ((void)0)
 #define fprintf(...) ((void)0)
-#define perror(...) ((void)0)
+#define perror(...) ((void)0)*/
 
 int cria_raw_socket(char* nome_interface_rede) {
   // AF_PACKET = Acesso direto ao nível de pacote da interface de rede
@@ -62,6 +62,54 @@ void imprimeFrame (unsigned char *bufferFrame, int tamFrameCompleto) {
 		printf("%02x ", bufferFrame[i]);
 	}
 	printf("\n");
+}
+
+int bit_stuffing(unsigned char *buffer, int tamanho_buffer, int capacidade_buffer) {
+	int bytes_extras = 0;
+	int j;
+
+	if (buffer == NULL || tamanho_buffer <= 0 || capacidade_buffer < tamanho_buffer) {
+		return -1;
+	}
+
+	for (int i = 0; i < tamanho_buffer; i++) {
+		if (buffer[i] == 0x88 || buffer[i] == 0x81) {
+			bytes_extras++;
+		}
+	}
+
+	if (tamanho_buffer + bytes_extras > capacidade_buffer) {
+		return -1;
+	}
+
+	j = tamanho_buffer + bytes_extras - 1;
+	for (int i = tamanho_buffer - 1; i >= 0; i--) {
+		if (buffer[i] == 0x88 || buffer[i] == 0x81) {
+			buffer[j--] = 0xff;
+		}
+		buffer[j--] = buffer[i];
+	}
+
+	return tamanho_buffer + bytes_extras;
+}
+
+int bit_destuffing(unsigned char *buffer, int tamanho_buffer) {
+	int j = 0;
+
+	if (buffer == NULL || tamanho_buffer <= 0) {
+		return -1;
+	}
+
+	for (int i = 0; i < tamanho_buffer; i++) {
+		buffer[j++] = buffer[i];
+
+		if ((buffer[i] == 0x88 || buffer[i] == 0x81) &&
+		    i + 1 < tamanho_buffer && buffer[i + 1] == 0xff) {
+			i++;
+		}
+	}
+
+	return j;
 }
 
 void kermit_free(struct kermit *k) {
@@ -207,12 +255,28 @@ int sendMsg (int socket, uint8_t tamDados, uint8_t sequencia, uint8_t tipo, unsi
 	int padding = 0;
 	if (tamDados < 10) { padding = 10;}
 	unsigned int tamFrameCompleto = tamDados + 4 + padding;
+	int capacidadeFrame = tamFrameCompleto * 2;
 
 	printf("-------------------------------\n");
 	printf("ENVIANDO FRAME TAM: %d  SEQ: %d TIPO: %d\n",
            tamFrameCompleto, sequencia, tipo);
 
 	imprimeFrame(frameCompleto, tamFrameCompleto);
+
+	//funcao de bit stuffing aqui
+	unsigned char *frameExpandido = realloc(frameCompleto, capacidadeFrame);
+	if (frameExpandido == NULL) {
+		free(frameCompleto);
+		return -1;
+	}
+	frameCompleto = frameExpandido;
+
+	int tamStuffed = bit_stuffing(frameCompleto, tamFrameCompleto, capacidadeFrame);
+	if (tamStuffed == -1) {
+		free(frameCompleto);
+		return -1;
+	}
+	tamFrameCompleto = (unsigned int)tamStuffed;
 
 	if (send(socket, frameCompleto, tamFrameCompleto, 0) == -1) {
 		perror("ERRO AO ENVIAR FRAME\n");
@@ -277,10 +341,12 @@ int recebe_mensagem(int soquete, int timeoutMillis, unsigned char* buffer, int t
 
 	do {
 		int bytes_lidos = recv(soquete, buffer, tamanho_buffer, 0);
-		if (bytes_lidos <= 0) {continue;}
 
-		if (protocolo_e_valido(buffer, bytes_lidos)) { return bytes_lidos; }
-	} while (timestamp() - comeco <= timeoutMillis);
+			//funcao de bit destuffing aqui
+			bytes_lidos = bit_destuffing(buffer, bytes_lidos);
+
+			if (protocolo_e_valido(buffer, bytes_lidos)) { return bytes_lidos; }
+		} while (timestamp() - comeco <= timeoutMillis);
 
 	return -1;
 }

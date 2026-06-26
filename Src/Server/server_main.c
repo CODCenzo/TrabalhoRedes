@@ -76,8 +76,13 @@ int main(int argc, char *argv[]) {
   while (running) {
     int resultado = servidor_receber_movimento(sock, &tipoMsgRecebida);
     ch = devolve_movimento(tipoMsgRecebida);
+    if (ch == 'q') {
+      printf("SERVER: Cliente solicitou encerramento do jogo.\n");
+      running = false;
+      break;
+    }
 
-    if (resultado == 1) {
+    if (resultado == 1 ) {
       printf("SERVER: Movimento detectado (Tipo: %d). Atualizando lógica do jogo...\n", tipoMsgRecebida);
              
       // funcao de envir premio dentro de play_round

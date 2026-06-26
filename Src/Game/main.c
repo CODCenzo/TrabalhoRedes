@@ -3,6 +3,7 @@
 
 int main(int argc, char **argv) {
   int ch;
+  int prize;
   int result = 0;
   bool running = true;
   Game *g;
@@ -43,7 +44,8 @@ int main(int argc, char **argv) {
       result = 0;
     } 
     else if (result == 0) {
-      result = play_round(g, ch);
+      prize = -1;
+      result = play_round(g, ch, &prize);
     }
   }
 

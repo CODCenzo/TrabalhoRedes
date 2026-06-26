@@ -104,34 +104,82 @@ void build_client_matrix(Game *g, char out[MAZE_SIZE][MAZE_SIZE + 1]) {
   }
 }
 
+static int ghost_can_move_to(Game *g, Ghost *ghost, int x, int y) {
+  int i;
+
+  if (is_wall(g, x, y))
+    return 0;
+
+  if (g->maze[y][x] >= '1' && g->maze[y][x] <= '6')
+    return 0;
+
+  for (i = 0; i < GHOSTS; i++) {
+    if (&g->ghosts[i] != ghost &&
+        g->ghosts[i].body.x == x && g->ghosts[i].body.y == y)
+      return 0;
+  }
+
+  return 1;
+}
+
+static int try_move_ghost(Game *g, Ghost *ghost, int dx, int dy) {
+  int nx = ghost->body.x + dx;
+  int ny = ghost->body.y + dy;
+
+  if (!ghost_can_move_to(g, ghost, nx, ny))
+    return 0;
+
+  ghost->body.x = nx;
+  ghost->body.y = ny;
+  ghost->body.dx = dx;
+  ghost->body.dy = dy;
+  return 1;
+}
+
+static int ghost_escape_outer_wall(Game *g, Ghost *ghost) {
+  int dx = 0;
+  int dy = 0;
+
+  if (ghost->body.x <= 1)
+    dx = 1;
+  else if (ghost->body.x >= MAZE_SIZE - 2)
+    dx = -1;
+  else if (ghost->body.y <= 1)
+    dy = 1;
+  else if (ghost->body.y >= MAZE_SIZE - 2)
+    dy = -1;
+  else
+    return 0;
+
+  return try_move_ghost(g, ghost, dx, dy);
+}
+
 void ghost_wall_rule(Game *g, Ghost *ghost, int prefer_left) {
   int left_dy, left_dx, right_dy, right_dx;
-  int dirs[4][2];
-  int i;
 
   rotate_left(ghost->body.dx, ghost->body.dy, &left_dx, &left_dy);
   rotate_right(ghost->body.dx, ghost->body.dy, &right_dx, &right_dy);
 
-  if (prefer_left) {
-    dirs[0][0] = left_dx;
-    dirs[0][1] = left_dy;
-    dirs[2][0] = right_dx;
-    dirs[2][1] = right_dy;
-  } else {
-    dirs[0][0] = right_dx;
-    dirs[0][1] = right_dy;
-    dirs[2][0] = left_dx;
-    dirs[2][1] = left_dy;
-  }
-  dirs[1][0] = ghost->body.dx;
-  dirs[1][1] = ghost->body.dy;
-  dirs[3][0] = -ghost->body.dx;
-  dirs[3][1] = -ghost->body.dy;
+  if (ghost_escape_outer_wall(g, ghost))
+    return;
 
-  for (i = 0; i < 4; i++) {
-    if (try_move(g, &ghost->body, dirs[i][0], dirs[i][1]))
+  if (prefer_left) {
+    if (try_move_ghost(g, ghost, ghost->body.dx, ghost->body.dy))
+      return;
+    if (try_move_ghost(g, ghost, left_dx, left_dy))
+      return;
+    if (try_move_ghost(g, ghost, right_dx, right_dy))
+      return;
+  } else {
+    if (try_move_ghost(g, ghost, ghost->body.dx, ghost->body.dy))
+      return;
+    if (try_move_ghost(g, ghost, right_dx, right_dy))
+      return;
+    if (try_move_ghost(g, ghost, left_dx, left_dy))
       return;
   }
+
+  try_move_ghost(g, ghost, -ghost->body.dx, -ghost->body.dy);
 }
 
 void ghost_random(Game *g, Ghost *ghost) {
@@ -141,7 +189,9 @@ void ghost_random(Game *g, Ghost *ghost) {
   int i, pick;
 
   for (i = 0; i < 4; i++) {
-    if (!is_wall(g, ghost->body.x + dirs[i][0], ghost->body.y + dirs[i][1])) {
+    if (ghost_can_move_to(g, ghost,
+                          ghost->body.x + dirs[i][0],
+                          ghost->body.y + dirs[i][1])) {
 
       options[count] = i;
       count++;
@@ -151,7 +201,7 @@ void ghost_random(Game *g, Ghost *ghost) {
     return;
 
   pick = options[rand() % count];
-  try_move(g, &ghost->body, dirs[pick][0], dirs[pick][1]);
+  try_move_ghost(g, ghost, dirs[pick][0], dirs[pick][1]);
 }
 
 void update_ghosts(Game *g) {

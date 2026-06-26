@@ -14,7 +14,7 @@
 #define MI 0x7e // Marcador de início
 #define SEQ_MODULO 64 // Limite da sequencia de mensagens
 
-#define MAX_FRAME_SIZE 35 // 4 bytes campos + 31 bytes de dados
+#define MAX_FRAME_SIZE 70 // Frame pode dobrar de tamanho apos bit stuffing
 #define MIN_FRAME_SIZE 14 // 4 bytes campos + 10 bytes de dados ou padding
 
 #define MAX_TENTATIVAS_ENVIO 50
@@ -59,6 +59,10 @@ void print_kermit(struct kermit *k);
 void kermit_free(struct kermit *k);
 
 void imprimeFrame (unsigned char *bufferFrame, int tamFrameCompleto);
+
+int bit_stuffing(unsigned char *buffer, int tamanho_buffer, int capacidade_buffer);
+
+int bit_destuffing(unsigned char *buffer, int tamanho_buffer);
 
 // Utiliza o PG=0x07 para calcular o CRC do buffer.
 uint8_t calculaCRC8(const unsigned char *data, int tamData);
