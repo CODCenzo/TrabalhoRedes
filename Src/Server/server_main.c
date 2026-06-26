@@ -83,12 +83,12 @@ int main(int argc, char *argv[]) {
 
       if (prize != -1) {
         printf("SERVER: Prêmio coletado! Tipo: %d\n", prize);
-        server_send_prize_collected(sock, prize);
+        server_send_prize_collected(sock, DATA_TYPE, prize);
         send_file(sock, prize_files[prize - 1], DATA_TYPE);
       }
       else {
         printf("SERVER: Nenhum prêmio coletado nesta jogada.\n");
-        server_send_prize_collected(sock, ERROR_TYPE); ;
+        server_send_prize_collected(sock, ERROR_TYPE, -1); ;
       }
 
       // Envia de volta a matriz atualizada pós-jogada para o cliente renderizar

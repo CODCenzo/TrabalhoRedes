@@ -20,7 +20,7 @@ int servidor_receber_movimento(int socket, uint8_t *tipo_movimento_recebido);
 
 void build_client_matrix_(Game *g, char **out) ;
 
-int server_send_prize_collected(int socket, int prize_type);
+int server_send_prize_collected(int socket, int prize_type, int prize) ;
 
 int client_receive_prize_collected(int socket, int *prize_type, int *number) ;
 
