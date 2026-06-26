@@ -88,7 +88,7 @@ int main(int argc, char *argv[]) {
       // funcao de envir premio dentro de play_round
       game_state = play_round(g, ch, &prize);
 
-      if(game_state == 1 || game_state == -1) {
+      if(game_state == -1) {
         server_send_prize_collected(sock, QUIT_TYPE, -2);
         printf("SERVER: Jogo encerrado.\n");
         break; // Sai do loop se o jogo terminou
