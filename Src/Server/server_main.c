@@ -33,6 +33,9 @@ int main(int argc, char *argv[]) {
   char **matrix  = alloc_matrix(MAZE_SIZE, MAZE_SIZE);
   char ch;
 
+  const char *prize_files[PRIZES] = {"1.txt", "2.txt", "3.jpg",
+                                     "4.jpg", "5.mp4", "6.mp4"};
+
   srand((unsigned int)time(NULL));
 
   if (argc < 2) {
@@ -81,6 +84,7 @@ int main(int argc, char *argv[]) {
       if (prize != -1) {
         printf("SERVER: Prêmio coletado! Tipo: %d\n", prize);
         server_send_prize_collected(sock, prize);
+        send_file(sock, prize_files[prize - 1], prize);
       }
       else {
         printf("SERVER: Nenhum prêmio coletado nesta jogada.\n");

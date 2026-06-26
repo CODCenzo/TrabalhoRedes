@@ -10,8 +10,8 @@
 #include "../../Headers/game.h"
 #include "../../Headers/draw.h"
 
-/*#define printf(...) ((void)0)
-#define fprintf(...) ((void)0)*/
+#define printf(...) ((void)0)
+#define fprintf(...) ((void)0)
 
 static void preparar_ncurses_cliente(void) {
   initscr();
@@ -66,6 +66,9 @@ int main(int argc, char *argv[]) {
     return EXIT_FAILURE;
   }
 
+  const char *prize_files[PRIZES] = {"1.txt", "2.txt", "3.jpg",
+                                     "4.jpg", "5.mp4", "6.mp4"};
+
   uint8_t m[40][40]; 
   memset(m, 0, sizeof(m));
 
@@ -118,10 +121,8 @@ int main(int argc, char *argv[]) {
     //sleep(1);
     client_receive_prize_collected(sock, &prize_type, &number);
     if (prize_type != -1) {
-      printf("CLIENT: Prêmio coletado! Tipo: %d, Número: %d\n", prize_type, number);
-    }
-    else {
-      printf("CLIENT: Nenhum prêmio coletado.\n");
+      //funcao de recebimento de arquivo
+      receive_file(sock, prize_files[prize_type - 1]);
     }
 
     // 2. Se um comando válido foi enviado, aguarda o servidor processar e devolver a matriz atualizada

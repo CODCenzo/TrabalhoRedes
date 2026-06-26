@@ -157,7 +157,7 @@ int servidor_receber_movimento(int socket, uint8_t *tipo_movimento_recebido) {
 
     // Verifica se o pacote é de fato um comando de movimento do personagem
     if (p->type == MOVE_UP_TYPE   || p->type == MOVE_DOWN_TYPE || 
-        p->type == MOVE_LEFT_TYPE || p->type == MOVE_RIGHT_TYPE) {
+        p->type == MOVE_LEFT_TYPE || p->type == MOVE_RIGHT_TYPE ) {
         
         printf("[SERVER] Comando de movimento recebido com sucesso (Tipo: %d, Seq: %d)!\n", p->type, p->seq);
         
@@ -245,5 +245,4 @@ int client_receive_prize_collected(int socket, int *prize_type, int *number) {
     // Caso receba outro tipo de pacote inesperado
     kermit_free(p);
     return -1;
-
 }
