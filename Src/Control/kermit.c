@@ -1,8 +1,8 @@
 #include "../../Headers/kermit.h" 
 
-/*#define printf(...) ((void)0)
+#define printf(...) ((void)0)
 #define fprintf(...) ((void)0)
-#define perror(...) ((void)0)*/
+#define perror(...) ((void)0)
 
 int cria_raw_socket(char* nome_interface_rede) {
   // AF_PACKET = Acesso direto ao nível de pacote da interface de rede
