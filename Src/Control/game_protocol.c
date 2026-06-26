@@ -181,7 +181,7 @@ int server_send_prize_collected(int socket, int prize_type, int prize) {
     int status ;
     unsigned char *buf = malloc(sizeof(int));
 
-    memset(buf, prize, sizeof(int));
+    memcpy(buf, &prize, sizeof(int));
 
     status = send_packet_with_retry(socket, sizeof(int), 0, prize_type, buf);
     if (status != 1) {
