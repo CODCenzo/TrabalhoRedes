@@ -114,6 +114,7 @@ int main(int argc, char *argv[]) {
       case 'q':
       case 'Q':
         printf("CLIENT: Encerrando o jogo...\n");
+        moveu = cliente_enviar_movimento(sock, QUIT_TYPE);
         break;
       default:
         break;

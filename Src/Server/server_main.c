@@ -23,9 +23,11 @@ char devolve_movimento(int tipoMsg) {
       return 'a';
     case MOVE_RIGHT_TYPE:
       return 'd';
+    case QUIT_TYPE:
+      return 'q';
   }
 
-  return '1'; // Nenhum movimento válido detectado
+  return '1'; 
 }
 
 int main(int argc, char *argv[]) {
