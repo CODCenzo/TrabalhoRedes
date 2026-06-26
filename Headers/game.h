@@ -84,9 +84,9 @@ void update_ghosts(Game *g) ;
 
 int check_collision(Game *g) ;
 
-void collect_prize(Game *g) ;
+int collect_prize(Game *g) ;
 
-int play_round(Game *g, int ch) ;
+int play_round(Game *g, int ch, int *prize) ;
 
 char **alloc_matrix(int l, int c) ;
 

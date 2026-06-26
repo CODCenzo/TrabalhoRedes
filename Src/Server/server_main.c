@@ -56,17 +56,18 @@ int main(int argc, char *argv[]) {
   srand(300);
   load_level(g, NULL);
 
-  // 1. Envia o estado inicial do labirinto assim que o cliente conecta
+  // Envia o estado inicial do labirinto assim que o cliente conecta
   printf("SERVER: Enviando tabuleiro inicial...\n");
   build_client_matrix_(g, matrix);
   enviar_tabuleiro_jogo(sock, matrix);
 
   uint8_t tipoMsgRecebida = 0;
   int game_state = 0; // 0 = ongoing, 1 = win, -1 = lose
+  int prize ;
 
   printf("SERVER: Pronto e aguardando jogadas do cliente...\n");
     
-  // 2. Loop principal do servidor para escuta contínua de comandos
+  // Loop principal do servidor para escuta contínua de comandos
   while (running) {
     int resultado = servidor_receber_movimento(sock, &tipoMsgRecebida);
     ch = devolve_movimento(tipoMsgRecebida);
@@ -74,9 +75,19 @@ int main(int argc, char *argv[]) {
     if (resultado == 1) {
       printf("SERVER: Movimento detectado (Tipo: %d). Atualizando lógica do jogo...\n", tipoMsgRecebida);
              
-      game_state =play_round(g, ch); // Função que processa o movimento no jogo
+      // funcao de envir premio dentro de play_round
+      game_state = play_round(g, ch, &prize);
 
-      // 3. Envia de volta a matriz atualizada pós-jogada para o cliente renderizar
+      if (prize != -1) {
+        printf("SERVER: Prêmio coletado! Tipo: %d\n", prize);
+        server_send_prize_collected(sock, prize);
+      }
+      else {
+        printf("SERVER: Nenhum prêmio coletado nesta jogada.\n");
+        server_send_prize_collected(sock, ERROR_TYPE); ;
+      }
+
+      // Envia de volta a matriz atualizada pós-jogada para o cliente renderizar
       printf("SERVER: Enviando matriz atualizada para o cliente.\n");
       build_client_matrix_(g, matrix);
       enviar_tabuleiro_jogo(sock, matrix);

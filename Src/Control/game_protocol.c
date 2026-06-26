@@ -175,3 +175,75 @@ int servidor_receber_movimento(int socket, uint8_t *tipo_movimento_recebido) {
     kermit_free(p);
     return -1;
 }
+
+int server_send_prize_collected(int socket, int prize_type) {
+    
+    int status ;
+    unsigned char *buf = malloc(sizeof(int));
+
+    memset(buf, prize_type, sizeof(int));
+
+    status = send_packet_with_retry(socket, sizeof(int), 0, prize_type, buf);
+    if (status != 1) {
+        fprintf(stderr, "[SERVER] ERRO ao enviar mensagem de prêmio coletado.\n");
+        free(buf);
+        return -1;
+    }
+
+    free(buf);
+    return 0;
+}
+
+int client_receive_prize_collected(int socket, int *prize_type, int *number) {
+
+    unsigned char buffer[MAX_FRAME_SIZE];
+    
+    // Aguarda uma mensagem da rede com o timeout padrão (ex: 300ms)
+    int bytes_lidos = recebe_mensagem(socket, DEFAULT_TIMEOUT_MS, buffer, MAX_FRAME_SIZE);
+
+    if (bytes_lidos == -1) {
+        // Timeout normal da rede, nenhum comando foi enviado nessa janela de tempo
+        return 0; 
+    }
+
+    // Transforma o buffer capturado na estrutura Kermit
+    struct kermit *p = parsing_kermit(buffer, bytes_lidos);
+    if (p == NULL) {
+        fprintf(stderr, "[SERVER] Falha no parsing do pacote de movimento recebido.\n");
+        return -1;
+    }
+
+    // Verifica se o pacote é de fato um comando de movimento do personagem
+    if (p->type == TXT_TYPE || p->type == MP4_TYPE || p->type == JPG_TYPE) {
+        
+        printf("[SERVER] Comando de arquivo (Tipo: %d, Seq: %d)!\n", p->type, p->seq);
+        
+        *prize_type = p->type;
+        memcpy(number, p->dados, sizeof(int)); 
+
+        // ack
+        sendMsg(socket, 0, p->seq, ACK_TYPE, NULL);
+
+        kermit_free(p);
+        return 1; // Sucesso
+    }
+
+    //caso que nao tem premio 
+    if (p->type == ERROR_TYPE) {
+        printf("[SERVER] Comando de nao-premio (Tipo: %d, Seq: %d)!\n", p->type, p->seq);
+
+        *prize_type = -1 ;
+        *number = -1 ;
+
+        // ACK 
+        sendMsg(socket, 0, p->seq, ACK_TYPE, NULL);
+
+        kermit_free(p);
+        return 2; // Sucesso
+    }
+
+    // Caso receba outro tipo de pacote inesperado
+    kermit_free(p);
+    return -1;
+
+}

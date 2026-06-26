@@ -178,18 +178,26 @@ int check_collision(Game *g) {
   return 0;
 }
 
-void collect_prize(Game *g) {
+int collect_prize(Game *g) {
+
   char tile = g->maze[g->pacman.y][g->pacman.x];
+  int num;
 
   if (tile >= '1' && tile <= '6') {
 
     g->maze[g->pacman.y][g->pacman.x] = '0';
     g->prizes_collected++;
     g->score += 100;
+
+    num = (int)(tile - '0');
+    //funcao que envia mensagem de premio coletado para o cliente
+    return num;
+
   }
+  return -1;
 }
 
-int play_round(Game *g, int ch) {
+int play_round(Game *g, int ch, int *prize) {
 
   int dx, dy;
 
@@ -209,7 +217,7 @@ int play_round(Game *g, int ch) {
   g->moves_count++;
   //cada 5 movimentos amplia 1 de visao 
   g->vision_radius = 1 + g->moves_count / 5;
-  collect_prize(g);
+  *prize = collect_prize(g);
 
   // Condicao de derrota
   if (check_collision(g))

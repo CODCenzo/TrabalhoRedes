@@ -20,7 +20,7 @@ int wait_response(int socket, uint8_t msgSequence) {
 
     struct kermit *p = parsing_kermit(bufferDeCaptura, tamanhoCapturado);
 
-    /*if (p == NULL) {
+    if (p == NULL) {
         printf("WAIT_RESPONSE: PARSING FALHOU SEQ %d\n", msgSequence);
         return -1;
     }
@@ -31,7 +31,7 @@ int wait_response(int socket, uint8_t msgSequence) {
                p->seq, msgSequence, p->type);
         kermit_free(p);
         return NACK_TYPE;
-    }*/
+    }
 
     /* ACK correto */
     if (p->type == ACK_TYPE) {
