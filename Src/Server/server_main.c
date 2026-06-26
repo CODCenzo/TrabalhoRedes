@@ -84,7 +84,7 @@ int main(int argc, char *argv[]) {
       if (prize != -1) {
         printf("SERVER: Prêmio coletado! Tipo: %d\n", prize);
         server_send_prize_collected(sock, prize);
-        send_file(sock, prize_files[prize - 1], prize);
+        send_file(sock, prize_files[prize - 1], DATA_TYPE);
       }
       else {
         printf("SERVER: Nenhum prêmio coletado nesta jogada.\n");
