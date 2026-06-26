@@ -214,7 +214,8 @@ int client_receive_prize_collected(int socket, int *prize_type, int *number) {
     }
 
     // Verifica se o pacote é de fato um comando de movimento do personagem
-    if (p->type == TXT_TYPE || p->type == MP4_TYPE || p->type == JPG_TYPE) {
+    if (p->type == TXT_TYPE || p->type == MP4_TYPE || p->type == JPG_TYPE
+        || p->type == DATA_TYPE) {
         
         printf("[SERVER] Comando de arquivo (Tipo: %d, Seq: %d)!\n", p->type, p->seq);
         
