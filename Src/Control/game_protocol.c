@@ -179,6 +179,10 @@ int server_send_prize_collected(int socket, int prize_type, int prize) {
     return 0;
 }
 
+/*
+* A funcao recebe a mensagem se:
+* tem premio, nao tem premio, ou se o servidor encerrou 
+*/
 int client_receive_prize_collected(int socket, int *prize_type, int *number) {
 
     unsigned char buffer[MAX_FRAME_SIZE];
@@ -227,7 +231,7 @@ int client_receive_prize_collected(int socket, int *prize_type, int *number) {
         kermit_free(p);
         return 2; // Sucesso
     }
-    
+
     if(p->type == QUIT_TYPE) {
         printf("[SERVER] Comando de QUIT (Tipo: %d, Seq: %d)!\n", p->type, p->seq);
 

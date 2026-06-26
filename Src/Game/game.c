@@ -52,7 +52,7 @@ void load_level(Game *g, const char *filepath) {
     exit(1);
   }
 
-  if (filepath != NULL) //&& load_csv_level(g, filepath))
+  if (filepath != NULL) 
     return;
 
   load_default_level(g);

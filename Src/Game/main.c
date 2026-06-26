@@ -1,3 +1,5 @@
+// arquivo apenas para teste do jogo localmente
+
 #include "../../Headers/game.h"
 #include "../../Headers/draw.h"
 
@@ -9,12 +11,8 @@ int main(int argc, char **argv) {
   Game *g;
   const char *maze_file = argc > 1 ? argv[1] : NULL;
   
-  //const char *prize_files[PRIZES] = {"1.txt", "2.txt", "3.jpg",
-  //                                   "4.jpg", "5.mp4", "6.mp4"};
-
   g = init_game();
 
-  //srand((unsigned int)time(NULL));
   srand(300);
   initscr();
   raw();

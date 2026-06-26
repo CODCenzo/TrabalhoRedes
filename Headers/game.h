@@ -60,8 +60,6 @@ void place_objects(Game *g, bool has_pacman,
 
 void load_default_level(Game *g) ;
 
-/*int load_csv_level(Game *g, const char *filepath) i*/
-
 void load_level(Game *g, const char *filepath) ;
 
 bool visible_to_pacman(Game *g, int x, int y) ;
