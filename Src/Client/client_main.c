@@ -122,7 +122,7 @@ int main(int argc, char *argv[]) {
     client_receive_prize_collected(sock, &prize_type, &number);
     if (prize_type != -1) {
       //funcao de recebimento de arquivo
-      receive_file(sock, prize_files[prize_type - 1]);
+      receive_file(sock, prize_files[number - 1]);
     }
 
     // 2. Se um comando válido foi enviado, aguarda o servidor processar e devolver a matriz atualizada
