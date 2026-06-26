@@ -3,3 +3,6 @@ all:
 
 clean:
 	rm exe_client
+	sudo rm *.txt
+	sudo rm *.jpg
+	sudo rm *.mp4
