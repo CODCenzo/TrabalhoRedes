@@ -52,6 +52,7 @@ static void imprimir_tabuleiro_ncurses(uint8_t tabuleiro[MAZE_SIZE][MAZE_SIZE]) 
 }
 
 int main(int argc, char *argv[]) {
+
   if (argc < 2) {
     fprintf(stderr, "Uso: %s <interface-de-rede>\n", argv[0]);
     fprintf(stderr, "Exemplo: %s eth0\n", argv[0]);
@@ -59,6 +60,9 @@ int main(int argc, char *argv[]) {
   }
 
   const char *interface = argv[1];
+  const char *prize_files[PRIZES] = {"1.txt", "2.txt", "3.jpg",
+                                     "4.jpg", "5.mp4", "6.mp4"};
+
 
   int sock = cria_raw_socket((char *)interface);
   if (sock < 0) {
@@ -66,8 +70,6 @@ int main(int argc, char *argv[]) {
     return EXIT_FAILURE;
   }
 
-  const char *prize_files[PRIZES] = {"1.txt", "2.txt", "3.jpg",
-                                     "4.jpg", "5.mp4", "6.mp4"};
 
   uint8_t m[40][40]; 
   memset(m, 0, sizeof(m));
@@ -85,6 +87,7 @@ int main(int argc, char *argv[]) {
 
   int input, moveu;
   int prize_type, number;
+  int cont_prizes = 0;
 
   do {
     input = getch();
@@ -119,14 +122,21 @@ int main(int argc, char *argv[]) {
       default:
         break;
     }
-    //sleep(1);
     client_receive_prize_collected(sock, &prize_type, &number);
+    if(prize_type == -2) {
+      printf("CLIENT: Servidor solicitou encerramento do jogo.\n");
+      break;
+    }
     if (prize_type != -1) {
       //funcao de recebimento de arquivo
       receive_file(sock, prize_files[number - 1]);
+      cont_prizes++;
+    }
+    if(cont_prizes == PRIZES) {
+      break;
     }
 
-    // 2. Se um comando válido foi enviado, aguarda o servidor processar e devolver a matriz atualizada
+    //  Se um comando válido foi enviado, aguarda o servidor processar e devolver a matriz atualizada
     if (moveu == 1) {
       printf("CLIENT: Comando aceito. Aguardando atualização do mapa...\n");
       if (receber_tabuleiro_jogo(sock, m) == 1) {

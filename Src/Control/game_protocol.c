@@ -139,22 +139,6 @@ int servidor_receber_movimento(int socket, uint8_t *tipo_movimento_recebido) {
         return -1;
     }
 
-    // Proteção contra ACKs perdidos: Se o cliente reenviou o pacote anterior cujo ACK sumiu na rede
-    /*if (p->seq == 0) {
-        printf("[SERVER] Pacote duplicado detectado (Seq: %d). Reenviando ACK...\n", p->seq);
-        sendMsg(socket, 0, p->seq, ACK_TYPE, NULL);
-        kermit_free(p);
-        return 0;
-    }
-
-    // Se o pacote estiver completamente fora de ordem sequencial
-    if (p->seq != 0) {
-        printf("[SERVER] Sequência incorreta. Esperada: 0, Recebida: %d\n", p->seq);
-        sendMsg(socket, 0, p->seq, NACK_TYPE, NULL);
-        kermit_free(p);
-        return -1;
-    }*/
-
     // Verifica se o pacote é de fato um comando de movimento do personagem
     if (p->type == MOVE_UP_TYPE   || p->type == MOVE_DOWN_TYPE || 
         p->type == MOVE_LEFT_TYPE || p->type == MOVE_RIGHT_TYPE ||
@@ -242,6 +226,19 @@ int client_receive_prize_collected(int socket, int *prize_type, int *number) {
 
         kermit_free(p);
         return 2; // Sucesso
+    }
+    
+    if(p->type == QUIT_TYPE) {
+        printf("[SERVER] Comando de QUIT (Tipo: %d, Seq: %d)!\n", p->type, p->seq);
+
+        *prize_type = -2 ;
+        *number = -2 ;
+
+        // ACK 
+        sendMsg(socket, 0, p->seq, ACK_TYPE, NULL);
+
+        kermit_free(p);
+        return 3; // Sucesso
     }
 
     // Caso receba outro tipo de pacote inesperado

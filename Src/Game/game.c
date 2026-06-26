@@ -136,32 +136,11 @@ static int try_move_ghost(Game *g, Ghost *ghost, int dx, int dy) {
   return 1;
 }
 
-static int ghost_escape_outer_wall(Game *g, Ghost *ghost) {
-  int dx = 0;
-  int dy = 0;
-
-  if (ghost->body.x <= 1)
-    dx = 1;
-  else if (ghost->body.x >= MAZE_SIZE - 2)
-    dx = -1;
-  else if (ghost->body.y <= 1)
-    dy = 1;
-  else if (ghost->body.y >= MAZE_SIZE - 2)
-    dy = -1;
-  else
-    return 0;
-
-  return try_move_ghost(g, ghost, dx, dy);
-}
-
 void ghost_wall_rule(Game *g, Ghost *ghost, int prefer_left) {
   int left_dy, left_dx, right_dy, right_dx;
 
   rotate_left(ghost->body.dx, ghost->body.dy, &left_dx, &left_dy);
   rotate_right(ghost->body.dx, ghost->body.dy, &right_dx, &right_dy);
-
-  if (ghost_escape_outer_wall(g, ghost))
-    return;
 
   if (prefer_left) {
     if (try_move_ghost(g, ghost, ghost->body.dx, ghost->body.dy))
@@ -247,6 +226,7 @@ int collect_prize(Game *g) {
   return -1;
 }
 
+// 1 == Win, -1 == Lose, 0 == Ongoing
 int play_round(Game *g, int ch, int *prize) {
 
   int dx, dy;
